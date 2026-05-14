@@ -1,0 +1,103 @@
+---
+title: "Getting started with tallieR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with tallieR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+tallieR is the R companion to the [ScoreMe app](https://scoreme.circadia-lab.uk). It imports
+participant JSON exports and returns tidy data frames ready for analysis.
+
+## Installation
+
+```r
+# install.packages("pak")
+pak::pkg_install("circadia-bio/tallieR")
+```
+
+## Basic workflow
+
+### 1. Read an export
+
+ScoreMe can export all participants in one JSON file. Point `read_scoreme()` at it:
+
+```{r read}
+library(tallieR)
+
+path <- system.file("extdata", "example_export.json", package = "tallieR")
+exp  <- read_scoreme(path)
+exp
+```
+
+Or read a whole folder of exports at once:
+
+```r
+study <- read_scoreme_dir("~/Downloads/my_study_exports/")
+```
+
+### 2. Wide score table
+
+One row per participant, one column per questionnaire (most recent session):
+
+```{r wide}
+wide <- scores_wide(exp)
+wide[, c("code", "age", "sex", "ess", "isi")]
+```
+
+### 3. Long score table
+
+One row per participant × questionnaire × administration (full history):
+
+```{r long}
+long <- scores_long(exp)
+head(long[, c("code", "questionnaire_id", "completed_at", "score")])
+```
+
+### 4. Item-level data
+
+One row per item response — useful for reliability analysis or IRT:
+
+```{r items}
+items <- items_long(exp)
+head(items[, c("code", "questionnaire_id", "item_id", "response")])
+```
+
+## Scoring and interpretation
+
+tallieR rescores all questionnaires from raw item responses by default.
+You can also call the scoring functions directly:
+
+```{r scoring}
+score_questionnaire("ess", list(
+  ess1 = 2, ess2 = 1, ess3 = 0, ess4 = 3,
+  ess5 = 1, ess6 = 0, ess7 = 2, ess8 = 1
+))
+
+interpret_score("ess", 10)
+```
+
+PSQI returns a named list of component scores alongside the global score:
+
+```{r psqi}
+psqi_answers <- list(
+  psqi9 = 2, psqi2 = 35, psqi5a = 2, psqi4 = 5.5,
+  psqi1 = list(hour = 0, minute = 30),
+  psqi3 = list(hour = 7, minute = 0),
+  psqi5b=2, psqi5c=1, psqi5d=0, psqi5e=1,
+  psqi5f=0, psqi5g=1, psqi5h=1, psqi5i=0,
+  psqi6 = 1, psqi7 = 2, psqi8 = 2
+)
+score_questionnaire("psqi", psqi_answers)
+```
+
+## Available instruments
+
+```{r instruments}
+available_instruments()
+```

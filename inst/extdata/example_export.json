@@ -1,0 +1,102 @@
+{
+  "exportedAt": "2026-05-14T10:00:00.000Z",
+  "exportVersion": "1.0",
+  "participantCount": 2,
+  "participants": [
+    {
+      "id": "1715680000001",
+      "code": "P001",
+      "name": "Alice Example",
+      "age": "28",
+      "sex": "female",
+      "bmi": "22.4",
+      "group": "control",
+      "site": "Newcastle",
+      "session": "baseline",
+      "diagnosis": "",
+      "medication": "",
+      "referral": "",
+      "customFields": [{ "label": "shift_worker", "value": "no" }],
+      "notes": "",
+      "createdAt": "2026-01-10T09:00:00.000Z",
+      "results": {
+        "ess": [
+          {
+            "questionnaireId": "ess",
+            "completedAt": "2026-01-10T09:05:00.000Z",
+            "answers": { "ess1": 2, "ess2": 1, "ess3": 0, "ess4": 3, "ess5": 1, "ess6": 0, "ess7": 2, "ess8": 1 },
+            "score": 10
+          }
+        ],
+        "isi": [
+          {
+            "questionnaireId": "isi",
+            "completedAt": "2026-01-10T09:10:00.000Z",
+            "answers": { "isi1": 1, "isi2": 1, "isi3": 0, "isi4": 1, "isi5": 1, "isi6": 0, "isi7": 1 },
+            "score": 5
+          }
+        ],
+        "meq": [
+          {
+            "questionnaireId": "meq",
+            "completedAt": "2026-01-10T09:15:00.000Z",
+            "answers": {
+              "meq1": 3, "meq2": 3, "meq3": 3, "meq4": 3, "meq5": 3,
+              "meq6": 3, "meq7": 3, "meq8": 3, "meq9": 3, "meq10": 3,
+              "meq11": 4, "meq12": 3, "meq13": 3, "meq14": 3, "meq15": 3,
+              "meq16": 3, "meq17": 3, "meq18": 3, "meq19": 4
+            },
+            "score": 59
+          }
+        ]
+      }
+    },
+    {
+      "id": "1715680000002",
+      "code": "P002",
+      "name": "Bob Example",
+      "age": "45",
+      "sex": "male",
+      "bmi": "31.2",
+      "group": "intervention",
+      "site": "Newcastle",
+      "session": "baseline",
+      "diagnosis": "insomnia",
+      "medication": "",
+      "referral": "",
+      "customFields": [{ "label": "shift_worker", "value": "yes" }],
+      "notes": "",
+      "createdAt": "2026-01-11T10:00:00.000Z",
+      "results": {
+        "ess": [
+          {
+            "questionnaireId": "ess",
+            "completedAt": "2026-01-11T10:05:00.000Z",
+            "answers": { "ess1": 3, "ess2": 3, "ess3": 2, "ess4": 3, "ess5": 3, "ess6": 1, "ess7": 3, "ess8": 2 },
+            "score": 20
+          }
+        ],
+        "isi": [
+          {
+            "questionnaireId": "isi",
+            "completedAt": "2026-01-11T10:10:00.000Z",
+            "answers": { "isi1": 4, "isi2": 3, "isi3": 2, "isi4": 4, "isi5": 3, "isi6": 2, "isi7": 4 },
+            "score": 22
+          }
+        ],
+        "stopbang": [
+          {
+            "questionnaireId": "stopbang",
+            "completedAt": "2026-01-11T10:20:00.000Z",
+            "answers": {
+              "sb_s": "yes", "sb_t": "yes", "sb_o": "no",
+              "sb_p": "yes", "sb_b": "yes", "sb_a": "no",
+              "sb_n": "yes", "sb_g": "yes"
+            },
+            "score": 6
+          }
+        ]
+      }
+    }
+  ]
+}
