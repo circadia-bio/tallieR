@@ -106,6 +106,7 @@ template:
       </style>
 
 logo: man/figures/logo.svg
+favicon: man/figures/favicon.svg
 
 home:
   title: "tallieR — R tools for ScoreMe questionnaire data"
