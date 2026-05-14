@@ -15,12 +15,12 @@ Source:
 
 França L, Leocadio-Miguel M (2026). *tallieR: Import and Score ScoreMe
 App Questionnaire Data*. R package version 0.1.0,
-<https://github.com/circadia-bio/tallieR>.
+<https://tallier.circadia-lab.uk>.
 
     @Manual{,
       title = {tallieR: Import and Score ScoreMe App Questionnaire Data},
       author = {Lucas França and Mario Leocadio-Miguel},
       year = {2026},
       note = {R package version 0.1.0},
-      url = {https://github.com/circadia-bio/tallieR},
+      url = {https://tallier.circadia-lab.uk},
     }

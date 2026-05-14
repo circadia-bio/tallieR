@@ -28,9 +28,9 @@ ready for downstream analysis.
 
 Useful links:
 
-- <https://github.com/circadia-bio/tallieR>
-
 - <https://tallier.circadia-lab.uk>
+
+- <https://github.com/circadia-bio/tallieR>
 
 - Report bugs at <https://github.com/circadia-bio/tallieR/issues>
 

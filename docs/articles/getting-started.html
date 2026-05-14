@@ -137,8 +137,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-
-      <h1>Getting started with tallieR</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Getting started with tallieR</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/circadia-bio/tallieR/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
@@ -166,7 +165,7 @@ analysis.</p>
 <p>ScoreMe can export all participants in one JSON file. Point
 <code><a href="../reference/read_scoreme.html">read_scoreme()</a></code> at it:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/circadia-bio/tallieR" class="external-link">tallieR</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tallier.circadia-lab.uk">tallieR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_export.json"</span>, package <span class="op">=</span> <span class="st">"tallieR"</span><span class="op">)</span></span>
 <span><span class="va">exp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
