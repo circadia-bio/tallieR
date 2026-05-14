@@ -1,4 +1,0 @@
-# License
-
-    YEAR: 2026
-    COPYRIGHT HOLDER: Lucas Franca, Mario Leocadio-Miguel

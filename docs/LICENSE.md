@@ -1,3 +1,0 @@
-# NA
-
-YEAR: 2026 COPYRIGHT HOLDER: Lucas França

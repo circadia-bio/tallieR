@@ -4,4 +4,5 @@
 .Ruserdata
 *.Rproj
 .DS_Store
-# docs/ is intentionally tracked — Netlify serves from it
+# docs/ is built by CI and pushed to gh-pages — not tracked on main
+docs/
