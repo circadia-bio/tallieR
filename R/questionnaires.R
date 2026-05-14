@@ -1,12 +1,12 @@
-# R/questionnaires.R — Scoring functions for all built-in ScoreMe instruments
+# R/questionnaires.R -- Scoring functions for all built-in ScoreMe instruments
 #
 # Each instrument has:
-#   .score_<id>(answers)     → numeric (or named list for PSQI components)
-#   .interpret_<id>(score)   → list(label, color, description)
+#   .score_<id>(answers)     -> numeric (or named list for PSQI components)
+#   .interpret_<id>(score)   -> list(label, color, description)
 #
 # The public API routes through score_questionnaire() and interpret_score().
 
-# ─── ESS ──────────────────────────────────────────────────────────────────────
+# --- ESS ----------------------------------------------------------------------
 
 .score_ess <- function(answers) {
   keys <- paste0("ess", 1:8)
@@ -20,7 +20,7 @@
   list(label = "Severe", color = "#DC2626", description = "Severe excessive daytime sleepiness. Recommend medical advice.")
 }
 
-# ─── ISI ──────────────────────────────────────────────────────────────────────
+# --- ISI ----------------------------------------------------------------------
 
 .score_isi <- function(answers) {
   keys <- paste0("isi", 1:7)
@@ -34,7 +34,7 @@
   list(label = "Clinical insomnia (severe)", color = "#DC2626", description = "Severe clinical insomnia. Recommend medical evaluation.")
 }
 
-# ─── DBAS-16 ──────────────────────────────────────────────────────────────────
+# --- DBAS-16 ------------------------------------------------------------------
 
 .score_dbas16 <- function(answers) {
   keys  <- paste0("dbas", 1:16)
@@ -47,7 +47,7 @@
   list(label = "Clinically relevant beliefs", color = "#EA580C", description = "Dysfunctional beliefs about sleep that may be worth exploring in therapy.")
 }
 
-# ─── MEQ ──────────────────────────────────────────────────────────────────────
+# --- MEQ ----------------------------------------------------------------------
 
 .score_meq <- function(answers) {
   keys <- paste0("meq", 1:19)
@@ -57,13 +57,13 @@
 .interpret_meq <- function(score) {
   if (score >= 70) return(list(label = "Definite morning type", color = "#F59E0B", description = "Definite morning type (early bird)."))
   if (score >= 59) return(list(label = "Moderate morning type", color = "#84CC16", description = "Moderate preference for mornings."))
-  if (score >= 42) return(list(label = "Intermediate type",     color = "#2E7D32", description = "Intermediate chronotype — neither strongly morning nor evening."))
+  if (score >= 42) return(list(label = "Intermediate type",     color = "#2E7D32", description = "Intermediate chronotype -- neither strongly morning nor evening."))
   if (score >= 31) return(list(label = "Moderate evening type", color = "#6366F1", description = "Moderate preference for evenings."))
   list(label = "Definite evening type", color = "#7C3AED", description = "Definite evening type (night owl).")
 }
 
-# ─── PSQI ─────────────────────────────────────────────────────────────────────
-# Returns a named list of component scores C1–C7 and the global score.
+# --- PSQI ---------------------------------------------------------------------
+# Returns a named list of component scores C1-C7 and the global score.
 
 .score_psqi <- function(answers) {
   .a <- function(k, default = 0) as.numeric(answers[[k]] %||% default)
@@ -114,7 +114,7 @@
   list(label = "Severe sleep difficulties", color = "#DC2626", description = "Severe sleep difficulties. Recommend medical evaluation.")
 }
 
-# ─── RU-SATED ─────────────────────────────────────────────────────────────────
+# --- RU-SATED -----------------------------------------------------------------
 
 .score_rusated <- function(answers) {
   keys <- paste0("rus", 1:6)
@@ -127,7 +127,7 @@
   list(label = "Poor sleep health", color = "#DC2626", description = "Poor sleep health across multiple dimensions.")
 }
 
-# ─── STOP-BANG ────────────────────────────────────────────────────────────────
+# --- STOP-BANG ----------------------------------------------------------------
 
 .score_stopbang <- function(answers) {
   keys <- c("sb_s", "sb_t", "sb_o", "sb_p", "sb_b", "sb_a", "sb_n", "sb_g")
@@ -140,7 +140,7 @@
   list(label = "High OSA risk", color = "#DC2626", description = "High OSA risk. Recommend medical evaluation.")
 }
 
-# ─── KSS ──────────────────────────────────────────────────────────────────────
+# --- KSS ----------------------------------------------------------------------
 
 .score_kss <- function(answers) {
   as.numeric(answers[["kss1"]] %||% NA_real_)
@@ -150,15 +150,15 @@
   if (is.na(score)) return(list(label = NA_character_, color = NA_character_, description = NA_character_))
   if (score <= 5)   return(list(label = "Alert",               color = "#2E7D32", description = "Adequately alert for most tasks."))
   if (score == 6)   return(list(label = "Onset of sleepiness", color = "#F59E0B", description = "Early signs of sleepiness. Caution for safety-critical tasks."))
-  if (score <= 8)   return(list(label = "Moderate sleepiness", color = "#EA580C", description = "Moderate sleepiness — performance impairment likely."))
-  list(label = "Severe sleepiness", color = "#DC2626", description = "Severe sleepiness — significant risk of performance failure.")
+  if (score <= 8)   return(list(label = "Moderate sleepiness", color = "#EA580C", description = "Moderate sleepiness -- performance impairment likely."))
+  list(label = "Severe sleepiness", color = "#DC2626", description = "Severe sleepiness -- significant risk of performance failure.")
 }
 
-# ─── MCTQ ─────────────────────────────────────────────────────────────────────
+# --- MCTQ ---------------------------------------------------------------------
 # Answers expected:
-#   bt_w, sl_w, wt_w  — bed time, sleep latency (min), wake time on workdays
-#   bt_f, sl_f, wt_f  — same for free days
-#   wd                — number of workdays per week (integer, 0–7)
+#   bt_w, sl_w, wt_w  -- bed time, sleep latency (min), wake time on workdays
+#   bt_f, sl_f, wt_f  -- same for free days
+#   wd                -- number of workdays per week (integer, 0-7)
 # Times are lists {hour, minute} or decimal hours; latency is numeric minutes.
 
 .parse_hm <- function(x, default = 0) {
@@ -173,7 +173,7 @@
 
 .score_mctq <- function(answers) {
   bt_w <- .parse_hm(answers[["bt_w"]], 23)
-  sl_w <- as.numeric(answers[["sl_w"]] %||% 15) / 60   # minutes → hours
+  sl_w <- as.numeric(answers[["sl_w"]] %||% 15) / 60   # minutes -> hours
   wt_w <- .parse_hm(answers[["wt_w"]], 7)
   bt_f <- .parse_hm(answers[["bt_f"]], 23)
   sl_f <- as.numeric(answers[["sl_f"]] %||% 15) / 60
@@ -215,7 +215,7 @@
 
   sjl_desc <- if (is.na(sjl))  ""
   else if (sjl < 1)  " Low social jetlag (< 1 h)."
-  else if (sjl < 2)  " Moderate social jetlag (1–2 h)."
+  else if (sjl < 2)  " Moderate social jetlag (1-2 h)."
   else               " High social jetlag (> 2 h)."
 
   list(label       = chrono$label,
@@ -223,7 +223,7 @@
        description = paste0(chrono$label, ".", sjl_desc))
 }
 
-# ─── Registry ─────────────────────────────────────────────────────────────────
+# --- Registry -----------------------------------------------------------------
 
 .INSTRUMENTS <- list(
   ess      = list(title = "Epworth Sleepiness Scale",                    score = .score_ess,      interpret = .interpret_ess,      domain = "Sleep",  max_score = 24),
@@ -237,7 +237,7 @@
   mctq     = list(title = "Munich Chronotype Questionnaire",              score = .score_mctq,     interpret = .interpret_mctq,     domain = "Sleep",  max_score = NA_real_)
 )
 
-# ─── Public API ───────────────────────────────────────────────────────────────
+# --- Public API ---------------------------------------------------------------
 
 #' List available instruments
 #'
@@ -273,7 +273,7 @@ available_instruments <- function() {
 #'   responses (numeric, character `"yes"`/`"no"`, or clock-time list).
 #'
 #' @return For most instruments: a single numeric score. For PSQI: a named
-#'   list with the global score and component scores C1–C7.
+#'   list with the global score and component scores C1-C7.
 #'
 #' @examples
 #' score_questionnaire("ess", list(ess1 = 2, ess2 = 1, ess3 = 0,

@@ -32,6 +32,10 @@ jobs:
           extra-packages: any::pkgdown, local::.
           needs: website
 
+      - name: Generate documentation
+        run: devtools::document()
+        shell: Rscript {0}
+
       - name: Build site
         run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}

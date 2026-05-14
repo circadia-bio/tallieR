@@ -5,3 +5,5 @@
 ^pkgdown$
 ^_pkgdown\.yml$
 ^\.DS_Store$
+^LICENSE\.md$
+^netlify\.toml$
