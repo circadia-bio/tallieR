@@ -168,6 +168,7 @@ See `vignette("getting-started", package = "tallieR")` for a full worked example
 | Role | Name | Affiliation |
 |---|---|---|
 | Author, maintainer | Lucas França | Northumbria University, Circadia Lab |
+| Author | Mario Leocadio-Miguel | Northumbria University, Circadia Lab |
 
 ---
 
@@ -184,4 +185,4 @@ See `vignette("getting-started", package = "tallieR")` for a full worked example
 
 Released under the [MIT License](./LICENSE).
 
-Copyright © Lucas França, 2026
+Copyright © Lucas França, Mario Leocadio-Miguel, 2026

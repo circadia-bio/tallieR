@@ -5,7 +5,10 @@ Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
            role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-0853-1319"))
+           comment = c(ORCID = "0000-0003-0853-1319")),
+    person("Mario", "Leocadio-Miguel",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-7248-3529"))
   )
 Description: A companion package for the ScoreMe app
     (https://scoreme.circadia-lab.uk). Provides tools to import
