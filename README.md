@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/tallieR)
+[![R CMD CHECK](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml)
 
 ---
 

@@ -4,4 +4,4 @@
 .Ruserdata
 *.Rproj
 .DS_Store
-docs/
+# docs/ is intentionally tracked — Netlify serves from it
