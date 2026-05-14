@@ -30,8 +30,9 @@ Imports:
 Suggests:
     ggplot2 (>= 3.4.0),
     knitr,
+    pkgdown,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/circadia-bio/tallieR
+URL: https://github.com/circadia-bio/tallieR, https://tallier.circadia-lab.uk
 BugReports: https://github.com/circadia-bio/tallieR/issues

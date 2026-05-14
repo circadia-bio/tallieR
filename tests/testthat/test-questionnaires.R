@@ -81,7 +81,25 @@ test_that("score_questionnaire: PSQI", {
 test_that("available_instruments returns expected IDs", {
   inst <- available_instruments()
   expect_true(is.data.frame(inst))
-  expect_true(all(c("ess","isi","dbas16","meq","psqi","rusated","stopbang","kss") %in% inst$id))
+  expect_true(all(c("ess","isi","dbas16","meq","psqi","rusated","stopbang","kss","mctq") %in% inst$id))
+})
+
+test_that("score_questionnaire: MCTQ", {
+  answers <- list(
+    bt_w = list(hour = 23, minute = 0),
+    sl_w = 15,
+    wt_w = list(hour = 7,  minute = 0),
+    bt_f = list(hour = 0,  minute = 30),
+    sl_f = 10,
+    wt_f = list(hour = 9,  minute = 0),
+    wd   = 5
+  )
+  result <- score_questionnaire("mctq", answers)
+  expect_true(is.list(result))
+  expect_true(all(c("msfsc", "sjl", "msw", "msf", "sd_w", "sd_f") %in% names(result)))
+  expect_gte(result$sjl, 0)
+  interp <- interpret_score("mctq", result)
+  expect_true(nchar(interp$label) > 0)
 })
 
 test_that("unknown questionnaire id gives informative error", {

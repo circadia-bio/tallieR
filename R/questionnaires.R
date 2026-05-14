@@ -154,6 +154,75 @@
   list(label = "Severe sleepiness", color = "#DC2626", description = "Severe sleepiness — significant risk of performance failure.")
 }
 
+# ─── MCTQ ─────────────────────────────────────────────────────────────────────
+# Answers expected:
+#   bt_w, sl_w, wt_w  — bed time, sleep latency (min), wake time on workdays
+#   bt_f, sl_f, wt_f  — same for free days
+#   wd                — number of workdays per week (integer, 0–7)
+# Times are lists {hour, minute} or decimal hours; latency is numeric minutes.
+
+.parse_hm <- function(x, default = 0) {
+  if (is.null(x)) return(as.numeric(default))
+  if (is.list(x)) {
+    h <- as.numeric(x[["hour"]]   %||% x[["hours"]]   %||% 0)
+    m <- as.numeric(x[["minute"]] %||% x[["minutes"]] %||% 0)
+    return(h + m / 60)
+  }
+  as.numeric(x)
+}
+
+.score_mctq <- function(answers) {
+  bt_w <- .parse_hm(answers[["bt_w"]], 23)
+  sl_w <- as.numeric(answers[["sl_w"]] %||% 15) / 60   # minutes → hours
+  wt_w <- .parse_hm(answers[["wt_w"]], 7)
+  bt_f <- .parse_hm(answers[["bt_f"]], 23)
+  sl_f <- as.numeric(answers[["sl_f"]] %||% 15) / 60
+  wt_f <- .parse_hm(answers[["wt_f"]], 7)
+  wd   <- as.numeric(answers[["wd"]]   %||% 5)
+  fd   <- 7 - wd
+
+  # Handle overnight: if wake < bed, wake is next day
+  so_w <- bt_w + sl_w
+  sd_w <- wt_w - so_w; if (sd_w <= 0) sd_w <- sd_w + 24
+  msw  <- so_w + sd_w / 2
+
+  so_f <- bt_f + sl_f
+  sd_f <- wt_f - so_f; if (sd_f <= 0) sd_f <- sd_f + 24
+  msf  <- so_f + sd_f / 2
+
+  # MSFsc: correct for sleep debt on workdays
+  sd_week  <- (sd_w * wd + sd_f * fd) / 7
+  deficit  <- sd_week - sd_w
+  msfsc    <- if (deficit > 0) msf - deficit / 2 else msf
+
+  # Social jetlag
+  sjl <- abs(msf - msw)
+
+  list(msfsc = round(msfsc %% 24, 2), sjl = round(sjl, 2),
+       msw = round(msw %% 24, 2), msf = round(msf %% 24, 2),
+       sd_w = round(sd_w, 2), sd_f = round(sd_f, 2))
+}
+
+.interpret_mctq <- function(score) {
+  msfsc <- if (is.list(score)) score[["msfsc"]] else as.numeric(score)
+  sjl   <- if (is.list(score)) score[["sjl"]]   else NA_real_
+
+  chrono <- if (msfsc < 0.5)       list(label = "Extremely early chronotype", color = "#F59E0B")
+  else if (msfsc < 2.5)            list(label = "Early chronotype",           color = "#84CC16")
+  else if (msfsc < 3.5)            list(label = "Intermediate chronotype",    color = "#2E7D32")
+  else if (msfsc < 5.5)            list(label = "Late chronotype",            color = "#6366F1")
+  else                             list(label = "Extremely late chronotype",  color = "#7C3AED")
+
+  sjl_desc <- if (is.na(sjl))  ""
+  else if (sjl < 1)  " Low social jetlag (< 1 h)."
+  else if (sjl < 2)  " Moderate social jetlag (1–2 h)."
+  else               " High social jetlag (> 2 h)."
+
+  list(label       = chrono$label,
+       color       = chrono$color,
+       description = paste0(chrono$label, ".", sjl_desc))
+}
+
 # ─── Registry ─────────────────────────────────────────────────────────────────
 
 .INSTRUMENTS <- list(
@@ -164,7 +233,8 @@
   psqi     = list(title = "Pittsburgh Sleep Quality Index",              score = .score_psqi,     interpret = .interpret_psqi,     domain = "Sleep",  max_score = 21),
   rusated  = list(title = "RU-SATED Sleep Health Scale",                 score = .score_rusated,  interpret = .interpret_rusated,  domain = "Sleep",  max_score = 24),
   stopbang = list(title = "STOP-BANG Questionnaire",                     score = .score_stopbang, interpret = .interpret_stopbang, domain = "Sleep",  max_score = 8),
-  kss      = list(title = "Karolinska Sleepiness Scale",                 score = .score_kss,      interpret = .interpret_kss,      domain = "Sleep",  max_score = 10)
+  kss      = list(title = "Karolinska Sleepiness Scale",                 score = .score_kss,      interpret = .interpret_kss,      domain = "Sleep",  max_score = 10),
+  mctq     = list(title = "Munich Chronotype Questionnaire",              score = .score_mctq,     interpret = .interpret_mctq,     domain = "Sleep",  max_score = NA_real_)
 )
 
 # ─── Public API ───────────────────────────────────────────────────────────────
