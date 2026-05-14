@@ -105,6 +105,8 @@ template:
         #search-input { border-color: #4A7BB5; }
       </style>
 
+logo: man/figures/logo.svg
+
 home:
   title: "tallieR — R tools for ScoreMe questionnaire data"
   description: >

@@ -1,4 +1,4 @@
-# 🧮 tallieR
+# 🧮 tallieR <img src="man/figures/logo.svg" align="right" height="140"/>
 
 **Import and score ScoreMe app questionnaire data in R.**
 
@@ -6,6 +6,7 @@
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/tallieR)
 [![R CMD CHECK](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://img.shields.io/badge/docs-tallier.circadia--lab.uk-4A7BB5)](https://tallier.circadia-lab.uk)
 
 ---
 
