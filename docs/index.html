@@ -18,6 +18,7 @@
 ">
 <meta property="og:description" content="An R package for importing, re-scoring, and tidying questionnaire data collected with the ScoreMe app. Built by the Circadia Lab at Northumbria University.
 ">
+<meta property="og:image" content="https://tallier.circadia-lab.uk/logo.svg">
 <!-- tallieR custom CSS --><style>
   /* ── Navbar ── */
   .navbar {
@@ -137,10 +138,12 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="abacus-tallier">🧮 tallieR<a class="anchor" aria-label="anchor" href="#abacus-tallier"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.svg" class="logo" alt=""><h1 id="abacus-tallier-">🧮 tallieR <a class="anchor" aria-label="anchor" href="#abacus-tallier-"></a>
+</h1>
+</div>
 <p><strong>Import and score ScoreMe app questionnaire data in R.</strong></p>
-<p><a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/tallieR" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a></p>
+<p><a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/tallieR" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://tallier.circadia-lab.uk"><img src="https://img.shields.io/badge/docs-tallier.circadia--lab.uk-4A7BB5" alt="pkgdown"></a></p>
 <hr>
 <blockquote>
 <p>[!WARNING] <strong>tallieR is in early development and has not been formally tested.</strong> The API may change without notice, scoring algorithms have not been validated against reference implementations, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.</p>
@@ -214,7 +217,7 @@
 <h3 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/circadia-bio/tallieR" class="external-link">tallieR</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tallier.circadia-lab.uk">tallieR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># ── Single export file ──────────────────────────────────────────────────────</span></span>
 <span><span class="va">exp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="st">"my_study_export.json"</span><span class="op">)</span></span>

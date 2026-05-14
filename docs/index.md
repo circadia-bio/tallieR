@@ -8,6 +8,7 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://tallier.circa
 [![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/tallieR)
 [![R CMD
 CHECK](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml)
+[![pkgdown](https://img.shields.io/badge/docs-tallier.circadia--lab.uk-4A7BB5)](https://tallier.circadia-lab.uk)
 
 ------------------------------------------------------------------------
 
