@@ -61,13 +61,19 @@ available_instruments <- function() {
 #' Score a questionnaire from item-level answers
 #'
 #' Computes the score for a single questionnaire using the official scoring
-#' algorithm embedded in tallieR.
+#' algorithm embedded in tallieR, or a custom scoring function compiled from
+#' a ScoreMe JSON spec via [load_instrument()].
 #'
 #' @param id Character. Questionnaire identifier (e.g. `"ess"`, `"psqi"`).
-#'   See [available_instruments()] for valid IDs.
+#'   See [available_instruments()] for valid IDs. For custom instruments,
+#'   this must match the `id` field in the spec passed to `instruments`.
 #' @param answers A named list of item responses, as exported by ScoreMe.
 #'   Keys are item IDs (e.g. `"ess1"`, `"psqi2"`); values are the raw
 #'   responses (numeric, character `"yes"`/`"no"`, or clock-time list).
+#' @param instruments An optional named list of additional instrument
+#'   registry entries, as returned by [load_instrument()] or
+#'   [load_instrument_dir()]. These are searched first, before the built-in
+#'   registry, so a custom entry can override a built-in if needed.
 #'
 #' @return For most instruments: a single numeric score. For composite
 #'   instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF): a named list
@@ -84,13 +90,24 @@ available_instruments <- function() {
 #'                                 ess4 = 3, ess5 = 1, ess6 = 0,
 #'                                 ess7 = 2, ess8 = 1))
 #'
+#' \dontrun{
+#' # Score using a custom instrument loaded from a JSON spec
+#' my_instr <- load_instrument("path/to/fss.json")
+#' score_questionnaire("fss", answers, instruments = my_instr)
+#' }
+#'
+#' @seealso [load_instrument()], [load_instrument_dir()]
+#'
 #' @export
-score_questionnaire <- function(id, answers) {
-  inst <- .INSTRUMENTS[[tolower(id)]]
+score_questionnaire <- function(id, answers, instruments = NULL) {
+  # Custom instruments take precedence over built-ins
+  registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+  inst <- registry[[tolower(id)]]
   if (is.null(inst)) {
     rlang::abort(paste0(
       "Unknown questionnaire id: '", id, "'. ",
-      "Use available_instruments() to see valid IDs."
+      "Use available_instruments() to see valid IDs, or load a custom ",
+      "instrument with load_instrument()."
     ))
   }
   if (isTRUE(inst$beta)) {
@@ -110,15 +127,19 @@ score_questionnaire <- function(id, answers) {
 #' when `rescore = TRUE` in [read_scoreme()].
 #'
 #' @param obj A `tallier_export` or `tallier_study` object.
+#' @param instruments An optional named list of additional registry entries
+#'   from [load_instrument()] or [load_instrument_dir()], merged with the
+#'   built-in registry before scoring. Entries in `instruments` take
+#'   precedence over built-ins with the same id.
 #'
 #' @return The same object with scores updated in-place.
 #'
 #' @export
-score_all <- function(obj) {
+score_all <- function(obj, instruments = NULL) {
   obj$participants <- lapply(obj$participants, function(p) {
     p$results <- lapply(p$results, function(r) {
       rescored <- tryCatch(
-        suppressWarnings(score_questionnaire(r$questionnaire_id, r$answers)),
+        suppressWarnings(score_questionnaire(r$questionnaire_id, r$answers, instruments = instruments)),
         error = function(e) NULL
       )
       if (!is.null(rescored)) r$score <- rescored
@@ -136,6 +157,8 @@ score_all <- function(obj) {
 #'
 #' @param id Character. Questionnaire identifier.
 #' @param score Numeric score (or named list for composite instruments).
+#' @param instruments An optional named list of additional registry entries
+#'   from [load_instrument()] or [load_instrument_dir()].
 #'
 #' @return A list with elements `label`, `color` (hex), and `description`.
 #'
@@ -144,8 +167,9 @@ score_all <- function(obj) {
 #' interpret_score("meq", 65)
 #'
 #' @export
-interpret_score <- function(id, score) {
-  inst <- .INSTRUMENTS[[tolower(id)]]
+interpret_score <- function(id, score, instruments = NULL) {
+  registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+  inst <- registry[[tolower(id)]]
   if (is.null(inst)) {
     rlang::abort(paste0("Unknown questionnaire id: '", id, "'."))
   }

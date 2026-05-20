@@ -3,6 +3,8 @@
 S3method(print,tallier_export)
 S3method(print,tallier_study)
 export(available_instruments)
+export(load_instrument)
+export(load_instrument_dir)
 export(interpret_score)
 export(items_long)
 export(read_scoreme)

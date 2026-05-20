@@ -123,6 +123,11 @@
 #' @param rescore Logical. If `TRUE` (default), scores are recomputed from
 #'   item-level answers using the built-in tallieR scoring functions. If
 #'   `FALSE`, the scores stored in the export file are used as-is.
+#' @param instruments An optional named list of custom instrument registry
+#'   entries created by [load_instrument()] or [load_instrument_dir()].
+#'   When `rescore = TRUE`, these are merged with the built-in registry so
+#'   that custom questionnaires in the export can be scored. Entries in
+#'   `instruments` take precedence over built-ins with the same id.
 #'
 #' @return A `tallier_export` object: a list with elements:
 #'   \describe{
@@ -137,10 +142,17 @@
 #' exp <- read_scoreme("my_study_export.json")
 #' print(exp)
 #' wide <- scores_wide(exp)
+#'
+#' # With custom instruments
+#' custom <- load_instrument("fss.json")
+#' exp    <- read_scoreme("export.json", instruments = custom)
+#' wide   <- scores_wide(exp)
 #' }
 #'
+#' @seealso [load_instrument()], [load_instrument_dir()]
+#'
 #' @export
-read_scoreme <- function(path, rescore = TRUE) {
+read_scoreme <- function(path, rescore = TRUE, instruments = NULL) {
   if (!file.exists(path)) {
     rlang::abort(paste0("File not found: ", path))
   }
@@ -167,7 +179,7 @@ read_scoreme <- function(path, rescore = TRUE) {
     participants <- lapply(participants, function(p) {
       p$results <- lapply(p$results, function(r) {
         rescored <- tryCatch(
-          score_questionnaire(r$questionnaire_id, r$answers),
+          score_questionnaire(r$questionnaire_id, r$answers, instruments = instruments),
           error = function(e) NULL
         )
         if (!is.null(rescored)) r$score <- rescored
@@ -198,6 +210,8 @@ read_scoreme <- function(path, rescore = TRUE) {
 #' @param rescore Logical. Passed to [read_scoreme()].
 #' @param pattern Regular expression used to filter filenames. Defaults to
 #'   `"\\.json$"` (all JSON files).
+#' @param instruments An optional named list of custom instrument registry
+#'   entries, passed through to [read_scoreme()]. See [load_instrument()].
 #'
 #' @return A `tallier_study` object: a list with elements:
 #'   \describe{
@@ -213,7 +227,7 @@ read_scoreme <- function(path, rescore = TRUE) {
 #' }
 #'
 #' @export
-read_scoreme_dir <- function(dir, rescore = TRUE, pattern = "\\.json$") {
+read_scoreme_dir <- function(dir, rescore = TRUE, pattern = "\\.json$", instruments = NULL) {
   if (!dir.exists(dir)) {
     rlang::abort(paste0("Directory not found: ", dir))
   }
@@ -228,7 +242,7 @@ read_scoreme_dir <- function(dir, rescore = TRUE, pattern = "\\.json$") {
   cli::cli_alert_info("Reading {length(files)} file{?s} from {.path {dir}}")
 
   exports <- lapply(files, function(f) {
-    tryCatch(read_scoreme(f, rescore = rescore), error = function(e) {
+    tryCatch(read_scoreme(f, rescore = rescore, instruments = instruments), error = function(e) {
       cli::cli_alert_warning("Skipping {.file {basename(f)}}: {e$message}")
       NULL
     })

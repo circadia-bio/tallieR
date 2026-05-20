@@ -1,0 +1,36 @@
+{
+  "id": "fss",
+  "title": "Fatigue Severity Scale",
+  "shortTitle": "FSS",
+  "domain": "Fatigue",
+  "construct": "Fatigue severity",
+  "constructDescription": "Measures the severity of fatigue and its effect on daily functioning.",
+  "timeframe": "Past week",
+  "beta": false,
+  "instructions": "For each statement below, circle a number from 1 to 7, where 1 = strongly disagree and 7 = strongly agree.",
+  "reference": "Krupp, L. B., LaRocca, N. G., Muir-Nash, J., & Steinberg, A. D. (1989). The fatigue severity scale. Archives of Neurology, 46(10), 1121-1123.",
+  "copyright": "© Lauren B. Krupp. Freely available for non-commercial research use.",
+  "maxScore": 63,
+  "scoringMethod": {
+    "type": "mean",
+    "items": ["fss1", "fss2", "fss3", "fss4", "fss5", "fss6", "fss7", "fss8", "fss9"]
+  },
+  "scoringNote": "Mean of 9 items rated 1–7. A score ≥ 4 is considered indicative of clinically significant fatigue.",
+  "scoreBandDirection": "asc",
+  "scoreBands": [
+    { "min": 1.0, "max": 3.9, "label": "No significant fatigue", "color": "#2E7D32", "description": "Mean score below the clinical threshold. Fatigue is not clinically significant." },
+    { "min": 4.0, "max": 5.4, "label": "Moderate fatigue",       "color": "#F59E0B", "description": "Mean score above the clinical threshold. Fatigue may be affecting daily activities." },
+    { "min": 5.5, "max": 7.0, "label": "Severe fatigue",         "color": "#DC2626", "description": "Severe fatigue. Significant impact on daily functioning is likely." }
+  ],
+  "items": [
+    { "id": "fss1", "number": 1, "text": "My motivation is lower when I am fatigued.",                  "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss2", "number": 2, "text": "Exercise brings on my fatigue.",                              "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss3", "number": 3, "text": "I am easily fatigued.",                                        "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss4", "number": 4, "text": "Fatigue interferes with my physical functioning.",             "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss5", "number": 5, "text": "Fatigue causes frequent problems for me.",                     "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss6", "number": 6, "text": "My fatigue prevents sustained physical functioning.",          "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss7", "number": 7, "text": "Fatigue interferes with carrying out certain duties.",         "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss8", "number": 8, "text": "Fatigue is among my three most disabling symptoms.",           "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] },
+    { "id": "fss9", "number": 9, "text": "Fatigue interferes with my work, family, or social life.",    "type": "scale_1_10", "options": [{"value":1,"label":"Strongly disagree"},{"value":2,"label":""},{"value":3,"label":""},{"value":4,"label":""},{"value":5,"label":""},{"value":6,"label":""},{"value":7,"label":"Strongly agree"}] }
+  ]
+}
