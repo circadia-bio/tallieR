@@ -1,6 +1,6 @@
 Package: tallieR
 Title: Import and Score ScoreMe App Questionnaire Data
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(
     person("Lucas", "França",
            email = "lucas.franca@northumbria.ac.uk",
@@ -12,10 +12,14 @@ Authors@R: c(
   )
 Description: A companion package for the ScoreMe app
     (https://scoreme.circadia-lab.uk). Provides tools to import
-    participant JSON exports, re-score validated questionnaires
-    (ESS, ISI, DBAS-16, MEQ, PSQI, RU-SATED, STOP-BANG, KSS),
-    and assemble tidy wide and long study-level data frames ready
-    for downstream analysis in R.
+    participant JSON exports, re-score validated questionnaires, and
+    assemble tidy wide and long study-level data frames ready for
+    downstream analysis in R. Stable instruments: ESS, ISI, DBAS-16,
+    MEQ, PSQI, RU-SATED, STOP-BANG, KSS, MCTQ. Beta instruments
+    (scoring ported from ScoreMe, not yet independently validated in
+    tallieR): PHQ-2, PHQ-9, PHQ-15, GAD-7, GAD-2, BDI-II, BAI,
+    DASS-21, PANSS, STAI-S, STAI-T, WHOQOL-BREF, MacArthur SSS,
+    IPAQ-S, GPAQ, GSQ, AQ-10.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
