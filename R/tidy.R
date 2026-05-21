@@ -325,3 +325,64 @@ completion_summary <- function(obj, wide = FALSE, include_date = TRUE,
 
   wide_df
 }
+
+# ─── as_tibble() S3 methods ────────────────────────────────────────────────────────
+
+#' Coerce a tallier_export to a tibble
+#'
+#' Converts a `tallier_export` object to a tibble by calling [scores_wide()]
+#' and coercing the result. One row per participant, one column per
+#' questionnaire, with participant metadata prepended by default.
+#'
+#' This method is registered for `tibble::as_tibble()` and is available
+#' automatically when the `tibble` package is loaded.
+#'
+#' @param x A `tallier_export` object.
+#' @param ... Additional arguments passed to [scores_wide()] (e.g.
+#'   `include_meta = FALSE`).
+#'
+#' @return A tibble; see [scores_wide()] for column details.
+#'
+#' @examples
+#' \dontrun{
+#' exp <- read_scoreme("export.json")
+#' tibble::as_tibble(exp)
+#' tibble::as_tibble(exp, include_meta = FALSE)
+#' }
+#'
+#' @export
+as_tibble.tallier_export <- function(x, ...) {
+  if (!requireNamespace("tibble", quietly = TRUE)) {
+    rlang::abort('Package "tibble" is required. Install it with install.packages("tibble").')
+  }
+  tibble::as_tibble(scores_wide(x, ...))
+}
+
+#' Coerce a tallier_study to a tibble
+#'
+#' Converts a `tallier_study` object to a tibble by calling [scores_wide()]
+#' and coercing the result. One row per participant, one column per
+#' questionnaire, with participant metadata prepended by default.
+#'
+#' This method is registered for `tibble::as_tibble()` and is available
+#' automatically when the `tibble` package is loaded.
+#'
+#' @param x A `tallier_study` object.
+#' @param ... Additional arguments passed to [scores_wide()] (e.g.
+#'   `include_meta = FALSE`).
+#'
+#' @return A tibble; see [scores_wide()] for column details.
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#' tibble::as_tibble(study)
+#' }
+#'
+#' @export
+as_tibble.tallier_study <- function(x, ...) {
+  if (!requireNamespace("tibble", quietly = TRUE)) {
+    rlang::abort('Package "tibble" is required. Install it with install.packages("tibble").')
+  }
+  tibble::as_tibble(scores_wide(x, ...))
+}

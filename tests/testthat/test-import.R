@@ -315,3 +315,40 @@ test_that("items_long scored_items = TRUE leaves non-reverse instruments unchang
   # ESS has no reverse items: response_scored should equal response for all rows
   expect_true(all(out$response_scored == out$response))
 })
+
+# ── as_tibble() ─────────────────────────────────────────────────────────────
+
+test_that("as_tibble.tallier_export returns a tibble with correct shape", {
+  skip_if_not_installed("tibble")
+  obj <- .make_export_for_summary()
+  # Give the results actual answers so scores_wide has something to pivot
+  obj$participants[[1]]$results[[1]]$answers <- list()
+  tbl <- tibble::as_tibble(obj)
+  expect_s3_class(tbl, "tbl_df")
+  expect_equal(nrow(tbl), 2L)  # one row per participant
+  expect_true("participant_id" %in% names(tbl))
+})
+
+test_that("as_tibble.tallier_export passes ... to scores_wide", {
+  skip_if_not_installed("tibble")
+  obj <- .make_export_for_summary()
+  tbl <- tibble::as_tibble(obj, include_meta = FALSE)
+  expect_s3_class(tbl, "tbl_df")
+  expect_false("name" %in% names(tbl))
+  expect_true("participant_id" %in% names(tbl))
+})
+
+test_that("as_tibble.tallier_study returns a tibble", {
+  skip_if_not_installed("tibble")
+  study <- structure(
+    list(
+      files          = c("a.json"),
+      n_participants = 2L,
+      participants   = .make_export_for_summary()$participants
+    ),
+    class = "tallier_study"
+  )
+  tbl <- tibble::as_tibble(study)
+  expect_s3_class(tbl, "tbl_df")
+  expect_equal(nrow(tbl), 2L)
+})
