@@ -176,3 +176,120 @@ items_long <- function(obj, include_meta = TRUE) {
 
   items
 }
+
+#' Completion summary
+#'
+#' Returns a data frame showing which questionnaires each participant has
+#' completed. Useful for monitoring data collection progress in longitudinal
+#' or multi-site studies.
+#'
+#' When a participant has completed a questionnaire more than once, it is
+#' counted as complete and the most recent `completed_at` timestamp is
+#' reported (when `include_date = TRUE`).
+#'
+#' @param obj A `tallier_export` or `tallier_study` object.
+#' @param wide Logical. If `FALSE` (default), returns a long data frame with
+#'   one row per participant × questionnaire and a `completed` logical column.
+#'   If `TRUE`, returns a wide data frame with one row per participant and one
+#'   logical column per questionnaire.
+#' @param include_date Logical. If `TRUE` (default), adds a `completed_at`
+#'   column in long format showing the timestamp of the most recent
+#'   administration. Ignored when `wide = TRUE`.
+#' @param include_meta Logical. If `TRUE` (default), participant metadata
+#'   columns are prepended.
+#'
+#' @return In long format: a `data.frame` with columns: participant metadata
+#'   (optional), `questionnaire_id`, `completed` (logical), and optionally
+#'   `completed_at` (character timestamp of most recent administration).
+#'   In wide format: a `data.frame` with one row per participant and one
+#'   logical column per questionnaire.
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#'
+#' # Long format: one row per participant x questionnaire
+#' completion_summary(study)
+#'
+#' # Wide format: one row per participant
+#' completion_summary(study, wide = TRUE)
+#'
+#' # Without timestamps
+#' completion_summary(study, include_date = FALSE)
+#' }
+#'
+#' @seealso [scores_wide()], [scores_long()]
+#'
+#' @export
+completion_summary <- function(obj, wide = FALSE, include_date = TRUE,
+                               include_meta = TRUE) {
+  participants <- obj[["participants"]]
+
+  if (length(participants) == 0L) return(data.frame())
+
+  # Collect all questionnaire IDs across the whole study
+  all_q_ids <- sort(unique(unlist(lapply(participants, function(p) {
+    vapply(p$results, `[[`, character(1), "questionnaire_id")
+  }))))
+
+  if (length(all_q_ids) == 0L) return(data.frame())
+
+  # Build long table: one row per participant x questionnaire
+  rows <- purrr::map_dfr(participants, function(p) {
+    meta    <- p$meta
+    p_id    <- meta$participant_id %||% NA_character_
+    p_code  <- meta$code           %||% NA_character_
+
+    # Index results by questionnaire id -> most recent completed_at
+    completed_qs <- list()
+    for (r in p$results) {
+      qid  <- r$questionnaire_id
+      date <- r$completed_at %||% NA_character_
+      # Keep the most recent timestamp
+      if (is.null(completed_qs[[qid]]) ||
+          (!is.na(date) && (is.na(completed_qs[[qid]]) || date > completed_qs[[qid]]))) {
+        completed_qs[[qid]] <- date
+      }
+    }
+
+    purrr::map_dfr(all_q_ids, function(qid) {
+      is_complete <- !is.null(completed_qs[[qid]])
+      data.frame(
+        participant_id   = p_id,
+        code             = p_code,
+        questionnaire_id = qid,
+        completed        = is_complete,
+        completed_at     = if (is_complete) completed_qs[[qid]] else NA_character_,
+        stringsAsFactors = FALSE
+      )
+    })
+  })
+
+  # Optionally drop the date column
+  if (!include_date || wide) {
+    rows$completed_at <- NULL
+  }
+
+  # Optionally prepend participant metadata
+  if (include_meta) {
+    meta_df <- .participants_to_df(obj)
+    rows    <- merge(meta_df, rows, by = c("participant_id", "code"), all.y = TRUE)
+  }
+
+  if (!wide) return(rows)
+
+  # Wide pivot: one logical column per questionnaire
+  wide_df <- tidyr::pivot_wider(
+    rows[, c("participant_id", "code", "questionnaire_id", "completed")],
+    id_cols     = c("participant_id", "code"),
+    names_from  = "questionnaire_id",
+    values_from = "completed"
+  )
+
+  if (include_meta) {
+    meta_df <- .participants_to_df(obj)
+    wide_df <- merge(meta_df, wide_df, by = c("participant_id", "code"), all.x = TRUE)
+  }
+
+  wide_df
+}

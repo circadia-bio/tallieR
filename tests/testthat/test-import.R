@@ -150,3 +150,81 @@ test_that("summary.tallier_study includes n_files", {
   expect_equal(s$n_participants, 2L)
   expect_true(all(c("ess", "isi") %in% s$instruments))
 })
+
+# ── completion_summary() ─────────────────────────────────────────────────────
+
+test_that("completion_summary() long format has correct shape", {
+  obj <- .make_export_for_summary()
+  out <- completion_summary(obj)
+
+  # 2 participants x 2 questionnaires = 4 rows
+  expect_equal(nrow(out), 4L)
+  expect_true(all(c("participant_id", "questionnaire_id", "completed",
+                    "completed_at") %in% names(out)))
+  expect_type(out$completed, "logical")
+})
+
+test_that("completion_summary() completed column is correct", {
+  obj <- .make_export_for_summary()
+  out <- completion_summary(obj)
+
+  # p1 completed both ESS and ISI
+  p1 <- out[out$participant_id == "p1", ]
+  expect_true(all(p1$completed))
+
+  # p2 completed ESS only
+  p2 <- out[out$participant_id == "p2", ]
+  expect_true(p2$completed[p2$questionnaire_id == "ess"])
+  expect_false(p2$completed[p2$questionnaire_id == "isi"])
+})
+
+test_that("completion_summary() most recent date is retained for repeated admins", {
+  # Give p1 two ESS administrations
+  obj <- .make_export_for_summary()
+  obj$participants[[1]]$results[[3]] <- list(
+    questionnaire_id = "ess",
+    completed_at     = "2026-01-09T10:00:00.000Z",
+    score = 8, answers = list()
+  )
+  out <- completion_summary(obj)
+
+  p1_ess <- out[out$participant_id == "p1" & out$questionnaire_id == "ess", ]
+  expect_equal(p1_ess$completed_at, "2026-01-09T10:00:00.000Z")
+})
+
+test_that("completion_summary() wide format has one row per participant", {
+  obj  <- .make_export_for_summary()
+  wide <- completion_summary(obj, wide = TRUE)
+
+  expect_equal(nrow(wide), 2L)
+  expect_true(all(c("ess", "isi") %in% names(wide)))
+  expect_type(wide$ess, "logical")
+
+  # p2's ISI column should be FALSE (not NA)
+  p2_row <- wide[wide$participant_id == "p2", ]
+  expect_false(p2_row$isi)
+})
+
+test_that("completion_summary() include_date = FALSE drops completed_at", {
+  obj <- .make_export_for_summary()
+  out <- completion_summary(obj, include_date = FALSE)
+  expect_false("completed_at" %in% names(out))
+})
+
+test_that("completion_summary() include_meta = FALSE drops metadata columns", {
+  obj <- .make_export_for_summary()
+  out <- completion_summary(obj, include_meta = FALSE)
+  expect_false("name" %in% names(out))
+  expect_true("participant_id" %in% names(out))
+})
+
+test_that("completion_summary() returns empty data frame for empty export", {
+  empty <- structure(
+    list(exported_at = NA, export_version = "1.0",
+         participants = list(), n_participants = 0L),
+    class = "tallier_export"
+  )
+  out <- completion_summary(empty)
+  expect_true(is.data.frame(out))
+  expect_equal(nrow(out), 0L)
+})
