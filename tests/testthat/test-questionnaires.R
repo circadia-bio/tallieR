@@ -101,12 +101,14 @@ test_that("score_questionnaire: MCTQ", {
   expected_sd_week <- round((result$sd_w * 5 + result$sd_f * 2) / 7, 2)
   expect_equal(result$sd_week, expected_sd_week)
 
-  # sjl_rel is signed: MSFsc - MSW, both as normalised clock times.
-  # Check sign and that it is consistent with the stored msfsc/msw to within
-  # rounding tolerance (independent rounding of each field can cause 0.01 drift).
+  # sjl_rel is signed and wrapped to (-12, +12]. Check it is consistent with
+  # the stored msfsc/msw modulo 24h wrapping.
   expect_true(is.numeric(result$sjl_rel))
-  expect_equal(result$sjl_rel, round(result$msfsc - result$msw, 2),
-               tolerance = 0.02)
+  expect_gte(result$sjl_rel, -12)
+  expect_lte(result$sjl_rel,  12)
+  raw_diff <- (result$msfsc %% 24) - (result$msw %% 24)
+  expected_sjl_rel <- ((raw_diff + 12) %% 24) - 12
+  expect_equal(result$sjl_rel, round(expected_sjl_rel, 2), tolerance = 0.02)
 
   # alarm flags absent from answers -> NA
   expect_true(is.na(result$alarm_w))
@@ -130,6 +132,34 @@ test_that("MCTQ alarm flags parsed correctly when present", {
   result <- score_questionnaire("mctq", answers_alarm)
   expect_true(isTRUE(result$alarm_w))
   expect_true(isFALSE(result$alarm_f))
+})
+
+test_that("MCTQ sjl_rel wraps correctly across midnight", {
+  # MSFsc near 0:30 (early riser on free days), MSW near 23:30 (very late on workdays)
+  # Naive formula: 0.5 - 23.5 = -23, correct answer: +1
+  answers_midnight <- list(
+    bt_w = list(hour = 22, minute = 0), sl_w = 60,
+    wt_w = list(hour =  2, minute = 0),  # MSW ~ 01:00 but sleep is late -> MSW 24h math
+    bt_f = list(hour = 23, minute = 0), sl_f = 30,
+    wt_f = list(hour =  2, minute = 0),
+    wd   = 5
+  )
+  result <- score_questionnaire("mctq", answers_midnight)
+  # sjl_rel must be in (-12, 12]
+  expect_gte(result$sjl_rel, -12)
+  expect_lte(result$sjl_rel,  12)
+
+  # Extreme case: MSFsc = 0.5h, MSW = 23.5h -> sjl_rel should be +1, not -23
+  answers_extreme <- list(
+    bt_w = list(hour = 22, minute = 30), sl_w =  0,
+    wt_w = list(hour =  1, minute =  0),   # sd_w = 2.5h, MSW = 23.75h
+    bt_f = list(hour = 23, minute = 30), sl_f =  0,
+    wt_f = list(hour =  2, minute =  0),   # sd_f = 2.5h, MSF = 0.75h
+    wd   = 5
+  )
+  result2 <- score_questionnaire("mctq", answers_extreme)
+  expect_lt(abs(result2$sjl_rel), 12)
+  expect_gt(result2$sjl_rel, -2)  # should be a small positive number (~+1), not -23
 })
 
 # ── Mental Health ─────────────────────────────────────────────────────────────
@@ -329,7 +359,8 @@ test_that("score_questionnaire: AQ-10", {
 test_that("available_instruments returns expected columns and IDs", {
   inst <- available_instruments()
   expect_true(is.data.frame(inst))
-  expect_true(all(c("id", "title", "domain", "max_score", "beta", "has_reverse") %in% names(inst)))
+  expect_true(all(c("id", "title", "domain", "max_score", "beta",
+                    "has_reverse", "returns_list") %in% names(inst)))
 
   # All original sleep instruments still present and non-beta
   sleep_ids <- c("ess", "isi", "dbas16", "meq", "psqi", "rusated", "stopbang", "kss", "mctq")
@@ -347,6 +378,11 @@ test_that("available_instruments returns expected columns and IDs", {
   expect_true(inst$has_reverse[inst$id == "stai_s"])
   expect_true(inst$has_reverse[inst$id == "stai_t"])
   expect_true(all(!inst$has_reverse[!inst$id %in% c("stai_s", "stai_t")]))
+
+  # Composite instruments flagged correctly
+  composite_ids <- c("psqi", "mctq", "dass21", "panss", "whoqol_bref")
+  expect_true(all(inst$returns_list[inst$id %in% composite_ids]))
+  expect_true(all(!inst$returns_list[!inst$id %in% composite_ids]))
 })
 
 test_that("score_questionnaire emits warning for beta instruments", {

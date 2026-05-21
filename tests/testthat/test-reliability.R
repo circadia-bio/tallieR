@@ -308,3 +308,51 @@ test_that("omega_reliability: omega >= alpha for congeneric items", {
   omega_res <- omega_reliability(export)
   expect_gte(omega_res$omega, alpha_res$alpha - 0.01)  # allow tiny numerical tolerance
 })
+
+test_that("cronbach_alpha: empty items data returns empty df with warning", {
+  # Construct an export with no results
+  empty_export <- structure(
+    list(participants = list(
+      list(meta = list(participant_id = "p1", code = "P001"), results = list())
+    )),
+    class = "tallier_export"
+  )
+  expect_warning(
+    result <- cronbach_alpha(empty_export),
+    "No item-level data"
+  )
+  expect_s3_class(result, "data.frame")
+  expect_equal(nrow(result), 0L)
+})
+
+test_that("omega_reliability: empty items data returns empty df with warning", {
+  empty_export <- structure(
+    list(participants = list(
+      list(meta = list(participant_id = "p1", code = "P001"), results = list())
+    )),
+    class = "tallier_export"
+  )
+  expect_warning(
+    result <- omega_reliability(empty_export),
+    "No item-level data"
+  )
+  expect_s3_class(result, "data.frame")
+  expect_equal(nrow(result), 0L)
+})
+
+test_that("omega_reliability: min_items binding produces NA with note", {
+  # A questionnaire with only 1 numeric item: should fail min_items check
+  set.seed(9)
+  n <- 20L
+  mat <- matrix(round(runif(n, 0, 3)), nrow = n, ncol = 1L,
+                dimnames = list(NULL, "q1"))
+  export <- .make_export(list(solo = mat))
+  result <- omega_reliability(export, min_items = 2L)
+  expect_true(is.na(result$omega))
+  expect_match(result$note, "min_items")
+})
+
+test_that("omega_reliability: data frame with missing columns errors", {
+  bad <- data.frame(a = 1, b = 2)
+  expect_error(omega_reliability(bad), "Missing")
+})

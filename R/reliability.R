@@ -102,6 +102,61 @@
 
 # ─── Public API ───────────────────────────────────────────────────────────────
 
+#' Validate and prepare item-level data for reliability functions
+#'
+#' Shared internal helper used by [cronbach_alpha()] and [omega_reliability()].
+#' Accepts either a tallier object or a pre-built `items_long()` data frame,
+#' validates required columns, optionally filters to a subset of questionnaires,
+#' and warns about unknown IDs.
+#'
+#' @return A list with `items` (data frame) and `all_qs` (character vector of
+#'   questionnaire IDs to process), or calls `rlang::warn`/`rlang::abort` and
+#'   returns `NULL` when the input is invalid or empty.
+#' @keywords internal
+.prepare_items <- function(obj, questionnaires, empty_fn) {
+  required <- c("participant_id", "questionnaire_id", "item_id",
+                "completed_at", "response")
+
+  if (is.data.frame(obj)) {
+    items   <- obj
+    missing <- setdiff(required, names(items))
+    if (length(missing) > 0L) {
+      rlang::abort(paste0(
+        "When passing a data frame, it must have columns: ",
+        paste(required, collapse = ", "), ". Missing: ",
+        paste(missing, collapse = ", "), "."
+      ))
+    }
+  } else {
+    items <- items_long(obj)
+  }
+
+  if (nrow(items) == 0L) {
+    rlang::warn("No item-level data found in `obj`. Returning empty data frame.")
+    return(NULL)
+  }
+
+  all_qs <- unique(items$questionnaire_id)
+
+  if (!is.null(questionnaires)) {
+    unknown <- setdiff(questionnaires, all_qs)
+    if (length(unknown) > 0L) {
+      rlang::warn(paste0(
+        "Questionnaire(s) not found in data and will be skipped: ",
+        paste(unknown, collapse = ", ")
+      ))
+    }
+    all_qs <- intersect(questionnaires, all_qs)
+  }
+
+  if (length(all_qs) == 0L) {
+    rlang::warn("No matching questionnaires found. Returning empty data frame.")
+    return(NULL)
+  }
+
+  list(items = items, all_qs = all_qs)
+}
+
 #' Cronbach's alpha for one or more questionnaires
 #'
 #' Computes Cronbach's alpha (a measure of internal consistency) for each
@@ -170,45 +225,10 @@ cronbach_alpha <- function(obj,
   }
   min_items <- as.integer(min_items)
 
-  # Accept either a tallier object or an items_long() data frame
-  if (is.data.frame(obj)) {
-    items <- obj
-    required <- c("participant_id", "questionnaire_id", "item_id",
-                  "completed_at", "response")
-    missing  <- setdiff(required, names(items))
-    if (length(missing) > 0L) {
-      rlang::abort(paste0(
-        "When passing a data frame, it must have columns: ",
-        paste(required, collapse = ", "), ". Missing: ",
-        paste(missing, collapse = ", "), "."
-      ))
-    }
-  } else {
-    items <- items_long(obj)
-  }
-
-  if (nrow(items) == 0L) {
-    rlang::warn("No item-level data found in `obj`. Returning empty data frame.")
-    return(.empty_alpha_df())
-  }
-
-  all_qs <- unique(items$questionnaire_id)
-
-  if (!is.null(questionnaires)) {
-    unknown <- setdiff(questionnaires, all_qs)
-    if (length(unknown) > 0L) {
-      rlang::warn(paste0(
-        "Questionnaire(s) not found in data and will be skipped: ",
-        paste(unknown, collapse = ", ")
-      ))
-    }
-    all_qs <- intersect(questionnaires, all_qs)
-  }
-
-  if (length(all_qs) == 0L) {
-    rlang::warn("No matching questionnaires found. Returning empty data frame.")
-    return(.empty_alpha_df())
-  }
+  prepared <- .prepare_items(obj, questionnaires, .empty_alpha_df)
+  if (is.null(prepared)) return(.empty_alpha_df())
+  items  <- prepared$items
+  all_qs <- prepared$all_qs
 
   rows <- lapply(all_qs, function(qid) {
     slice  <- items[items$questionnaire_id == qid, ]
@@ -400,45 +420,10 @@ omega_reliability <- function(obj,
                               min_items      = 2L) {
   min_items <- as.integer(min_items)
 
-  # Accept either a tallier object or an items_long() data frame
-  if (is.data.frame(obj)) {
-    items <- obj
-    required <- c("participant_id", "questionnaire_id", "item_id",
-                  "completed_at", "response")
-    missing  <- setdiff(required, names(items))
-    if (length(missing) > 0L) {
-      rlang::abort(paste0(
-        "When passing a data frame, it must have columns: ",
-        paste(required, collapse = ", "), ". Missing: ",
-        paste(missing, collapse = ", "), "."
-      ))
-    }
-  } else {
-    items <- items_long(obj)
-  }
-
-  if (nrow(items) == 0L) {
-    rlang::warn("No item-level data found in `obj`. Returning empty data frame.")
-    return(.empty_omega_df())
-  }
-
-  all_qs <- unique(items$questionnaire_id)
-
-  if (!is.null(questionnaires)) {
-    unknown <- setdiff(questionnaires, all_qs)
-    if (length(unknown) > 0L) {
-      rlang::warn(paste0(
-        "Questionnaire(s) not found in data and will be skipped: ",
-        paste(unknown, collapse = ", ")
-      ))
-    }
-    all_qs <- intersect(questionnaires, all_qs)
-  }
-
-  if (length(all_qs) == 0L) {
-    rlang::warn("No matching questionnaires found. Returning empty data frame.")
-    return(.empty_omega_df())
-  }
+  prepared <- .prepare_items(obj, questionnaires, .empty_omega_df)
+  if (is.null(prepared)) return(.empty_omega_df())
+  items  <- prepared$items
+  all_qs <- prepared$all_qs
 
   rows <- lapply(all_qs, function(qid) {
     slice <- items[items$questionnaire_id == qid, ]

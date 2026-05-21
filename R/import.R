@@ -44,8 +44,6 @@
 
 # ─── Internal helpers ─────────────────────────────────────────────────────────
 
-`%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-
 .scalar <- function(x, default = NA_character_) {
   if (is.null(x) || length(x) == 0) return(default)
   as.character(x[[1]])
@@ -264,17 +262,37 @@ read_scoreme_dir <- function(dir, rescore = TRUE, pattern = "\\.json$", instrume
 
 #' @export
 print.tallier_export <- function(x, ...) {
-  cli::cli_alert_info(
-    "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at}"
-  )
+  instruments <- sort(unique(unlist(lapply(x$participants, function(p) {
+    vapply(p$results, `[[`, character(1), "questionnaire_id")
+  }))))
+  if (length(instruments) > 0L) {
+    cli::cli_alert_info(
+      "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at}"
+    )
+    cli::cli_bullets(c(" " = "Instruments ({length(instruments)}): {paste(instruments, collapse = ', ')}"))
+  } else {
+    cli::cli_alert_info(
+      "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at} | no results"
+    )
+  }
   invisible(x)
 }
 
 #' @export
 print.tallier_study <- function(x, ...) {
-  cli::cli_alert_info(
-    "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s}"
-  )
+  instruments <- sort(unique(unlist(lapply(x$participants, function(p) {
+    vapply(p$results, `[[`, character(1), "questionnaire_id")
+  }))))
+  if (length(instruments) > 0L) {
+    cli::cli_alert_info(
+      "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s}"
+    )
+    cli::cli_bullets(c(" " = "Instruments ({length(instruments)}): {paste(instruments, collapse = ', ')}"))
+  } else {
+    cli::cli_alert_info(
+      "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s} | no results"
+    )
+  }
   invisible(x)
 }
 

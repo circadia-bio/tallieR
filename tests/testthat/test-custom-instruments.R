@@ -165,3 +165,85 @@ test_that("composite scoring type emits a warning and returns NA", {
   expect_true(is.na(score))
   unlink(tmp)
 })
+
+# ─── Reverse items parsing ─────────────────────────────────────────────────────
+
+test_that(".compile_instrument parses reverseItems into reverse_items field", {
+  tmp <- tempfile(fileext = ".json")
+  spec <- list(
+    id    = "test_reverse",
+    title = "Reverse Test",
+    items = list(
+      list(id = "r1", number = 1, text = "Q1", type = "scale_1_5"),
+      list(id = "r2", number = 2, text = "Q2", type = "scale_1_5"),
+      list(id = "r3", number = 3, text = "Q3", type = "scale_1_5")
+    ),
+    scoringMethod = list(
+      type         = "sum",
+      items        = list("r1", "r2", "r3"),
+      reverseItems = list(list(id = "r2"), list(id = "r3")),
+      reverseMaxVal = 5L
+    )
+  )
+  writeLines(jsonlite::toJSON(spec, auto_unbox = TRUE), tmp)
+  reg  <- load_instrument(tmp)
+  inst <- reg[["test_reverse"]]
+
+  expect_false(is.null(inst$reverse_items))
+  expect_equal(sort(inst$reverse_items$item_ids), c("r2", "r3"))
+  expect_equal(inst$reverse_items$max_val, 5L)
+  unlink(tmp)
+})
+
+test_that("items_long scored_items = TRUE reverses custom instrument items correctly", {
+  tmp <- tempfile(fileext = ".json")
+  spec <- list(
+    id    = "mini_q",
+    title = "Mini Q",
+    items = list(
+      list(id = "mq1", number = 1, text = "Q1", type = "scale_1_4"),
+      list(id = "mq2", number = 2, text = "Q2", type = "scale_1_4"),
+      list(id = "mq3", number = 3, text = "Q3", type = "scale_1_4")
+    ),
+    scoringMethod = list(
+      type         = "sum",
+      items        = list("mq1", "mq2", "mq3"),
+      reverseItems = list(list(id = "mq3")),
+      reverseMaxVal = 4L
+    )
+  )
+  writeLines(jsonlite::toJSON(spec, auto_unbox = TRUE), tmp)
+  custom <- load_instrument(tmp)
+
+  # Build a minimal export with this custom instrument
+  obj <- structure(
+    list(
+      exported_at = NA, export_version = "1.0", n_participants = 1L,
+      participants = list(list(
+        meta    = list(participant_id = "p1", code = "P001", name = "Test",
+                       age = "30", sex = "female", bmi = "", group = "",
+                       site = "", session = "", diagnosis = "",
+                       medication = "", referral = "", notes = "",
+                       created_at = "2026-01-01T00:00:00.000Z"),
+        results = list(list(
+          questionnaire_id = "mini_q",
+          completed_at     = "2026-01-01T09:00:00.000Z",
+          score = 8L,
+          answers = list(mq1 = 3L, mq2 = 3L, mq3 = 3L)
+        ))
+      ))
+    ),
+    class = "tallier_export"
+  )
+
+  out <- items_long(obj, scored_items = TRUE, instruments = custom)
+  expect_true("response_scored" %in% names(out))
+
+  # mq3 is reversed (max_val = 4): 4 + 1 - 3 = 2
+  expect_equal(out$response_scored[out$item_id == "mq3"], "2")
+  # mq1 and mq2 are forward: response_scored == response
+  expect_equal(out$response_scored[out$item_id == "mq1"], "3")
+  expect_equal(out$response_scored[out$item_id == "mq2"], "3")
+
+  unlink(tmp)
+})

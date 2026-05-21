@@ -35,7 +35,11 @@
 #' the ScoreMe app exactly; use with appropriate caution in clinical contexts.
 #'
 #' @return A `data.frame` with columns `id`, `title`, `domain`, `max_score`,
-#'   `beta`.
+#'   `beta`, `has_reverse`, and `returns_list`. The `max_score` column refers
+#'   to the primary scalar score; instruments where `returns_list = TRUE`
+#'   (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) return a named list of
+#'   subscale scores rather than a single number, and `max_score` reflects
+#'   the global or total component only.
 #'
 #' @examples
 #' available_instruments()
@@ -48,6 +52,7 @@
 #'
 #' @export
 available_instruments <- function() {
+  composite_ids <- c("psqi", "mctq", "dass21", "panss", "whoqol_bref")
   data.frame(
     id          = names(.INSTRUMENTS),
     title       = vapply(.INSTRUMENTS, `[[`, character(1), "title"),
@@ -55,6 +60,7 @@ available_instruments <- function() {
     max_score   = vapply(.INSTRUMENTS, `[[`, numeric(1),   "max_score"),
     beta        = vapply(.INSTRUMENTS, `[[`, logical(1),   "beta"),
     has_reverse = vapply(.INSTRUMENTS, function(x) !is.null(x[["reverse_items"]]), logical(1)),
+    returns_list = names(.INSTRUMENTS) %in% composite_ids,
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -140,6 +146,9 @@ score_questionnaire <- function(id, answers, instruments = NULL) {
 score_all <- function(obj, instruments = NULL) {
   beta_seen <- character(0)
 
+  # Build the merged registry once, outside the participant/result loops.
+  registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+
   obj$participants <- lapply(obj$participants, function(p) {
     p$results <- lapply(p$results, function(r) {
       rescored <- tryCatch(
@@ -149,7 +158,6 @@ score_all <- function(obj, instruments = NULL) {
       if (!is.null(rescored)) r$score <- rescored
 
       # Track beta instruments encountered (without warning yet)
-      registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
       inst <- registry[[tolower(r$questionnaire_id)]]
       if (isTRUE(inst$beta)) {
         beta_seen <<- union(beta_seen, r$questionnaire_id)

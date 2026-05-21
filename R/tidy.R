@@ -17,23 +17,33 @@
 .results_to_df <- function(obj) {
   participants <- obj[["participants"]]
 
+  # For composite instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) the
+  # score is a named list. We extract a single representative scalar so that
+  # scores_wide() can produce a numeric column rather than a JSON string.
+  # The key used is the first element of the list (always the global/total
+  # component), which matches what scores_wide() would be most useful for.
+  .extract_score <- function(score_val) {
+    if (!is.list(score_val)) return(as.character(score_val))
+    primary_keys <- c("global", "total", "msfsc")
+    for (k in primary_keys) {
+      if (!is.null(score_val[[k]])) return(as.character(score_val[[k]]))
+    }
+    # Fallback: first element
+    as.character(score_val[[1L]])
+  }
+
   purrr::map_dfr(participants, function(p) {
     meta <- p$meta
 
     if (length(p$results) == 0) return(NULL)
 
     purrr::map_dfr(p$results, function(r) {
-      score_val <- r$score
-      # Flatten composite scores (e.g. named list) to a JSON string
-      if (is.list(score_val)) {
-        score_val <- jsonlite::toJSON(score_val, auto_unbox = TRUE)
-      }
       data.frame(
         participant_id   = meta$participant_id %||% NA_character_,
         code             = meta$code           %||% NA_character_,
         questionnaire_id = r$questionnaire_id,
         completed_at     = r$completed_at,
-        score            = as.character(score_val),
+        score            = .extract_score(r$score),
         stringsAsFactors = FALSE
       )
     })
@@ -85,7 +95,12 @@
 #'   columns (code, name, age, sex, etc.) are prepended.
 #'
 #' @return A `data.frame` with columns: participant metadata (if requested)
-#'   followed by one numeric score column per questionnaire.
+#'   followed by one score column per questionnaire. For most instruments the
+#'   column is numeric. For composite instruments (PSQI, MCTQ, DASS-21, PANSS,
+#'   WHOQOL-BREF) the column contains the primary summary scalar: the global
+#'   score for PSQI, total for DASS-21/PANSS/WHOQOL-BREF, and MSFsc for MCTQ.
+#'   Use [scores_long()] followed by a join with [interpret_all()] to access
+#'   all subscale components.
 #'
 #' @examples
 #' \dontrun{
@@ -238,10 +253,12 @@ items_long <- function(obj, include_meta = TRUE, scored_items = FALSE,
 #'   columns are prepended.
 #'
 #' @return In long format: a `data.frame` with columns: participant metadata
-#'   (optional), `questionnaire_id`, `completed` (logical), and optionally
-#'   `completed_at` (character timestamp of most recent administration).
+#'   (optional), `questionnaire_id`, `completed` (logical, `FALSE` — not
+#'   `NA` — for questionnaires the participant never started), and optionally
+#'   `completed_at` (character timestamp of most recent administration;
+#'   `NA` when `completed = FALSE`).
 #'   In wide format: a `data.frame` with one row per participant and one
-#'   logical column per questionnaire.
+#'   logical column per questionnaire (`FALSE` indicates not completed).
 #'
 #' @examples
 #' \dontrun{

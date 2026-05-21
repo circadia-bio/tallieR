@@ -203,7 +203,10 @@
   # SJL_rel (relative / signed): MSFsc - MSW, both normalised to clock time.
   # Positive values indicate a later circadian phase on free days (the typical
   # direction); negative values indicate an earlier phase on free days.
-  sjl_rel <- (msfsc %% 24) - (msw %% 24)
+  # The difference is wrapped to (-12, +12] to handle midnight crossings
+  # correctly (e.g. MSFsc = 0.5 h, MSW = 23.5 h -> +1 h, not -23 h).
+  sjl_rel_raw <- (msfsc %% 24) - (msw %% 24)
+  sjl_rel     <- ((sjl_rel_raw + 12) %% 24) - 12
 
   # Alarm flags: optional items captured by ScoreMe (yes/no).
   # Returns NA if the item was not included in the export.
