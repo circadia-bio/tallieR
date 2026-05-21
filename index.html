@@ -113,6 +113,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/getting-started.html">Getting started with tallieR</a></li>
+    <li><a class="dropdown-item" href="articles/custom-instruments.html">Custom instruments in tallieR</a></li>
+    <li><a class="dropdown-item" href="articles/reliability-analysis.html">Reliability analysis in tallieR</a></li>
+    <li><a class="dropdown-item" href="articles/longitudinal-data.html">Longitudinal data in tallieR</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -166,13 +169,19 @@
 </li>
 <li>📊 <strong><code><a href="reference/scores_wide.html">scores_wide()</a></code></strong> — one row per participant, one column per questionnaire (most recent session)</li>
 <li>📋 <strong><code><a href="reference/scores_long.html">scores_long()</a></code></strong> — one row per participant × questionnaire × administration (full history retained)</li>
-<li>🔬 <strong><code><a href="reference/items_long.html">items_long()</a></code></strong> — one row per item response, for factor analysis, IRT, or reliability checks</li>
+<li>🔬 <strong><code><a href="reference/items_long.html">items_long()</a></code></strong> — one row per item response; optional <code>scored_items = TRUE</code> applies reverse-scoring</li>
+<li>✅ <strong><code><a href="reference/completion_summary.html">completion_summary()</a></code></strong> — participant × questionnaire completion matrix (long or wide format)</li>
 <li>🧮 <strong><code><a href="reference/score_questionnaire.html">score_questionnaire()</a></code></strong> — re-score any built-in instrument from a raw answers list</li>
 <li>💬 <strong><code><a href="reference/interpret_score.html">interpret_score()</a></code></strong> — return the clinical score band (label, colour, description) for any score</li>
-<li>📋 <strong><code><a href="reference/available_instruments.html">available_instruments()</a></code></strong> — list all supported questionnaires with IDs, domains, and beta status</li>
+<li>💬 <strong><code><a href="reference/interpret_all.html">interpret_all()</a></code></strong> — return clinical interpretations for all results in a study as a long data frame</li>
+<li>📋 <strong><code><a href="reference/available_instruments.html">available_instruments()</a></code></strong> — list all supported questionnaires with IDs, domains, beta status, and reverse-scoring flags</li>
 <li>📁 <strong><code><a href="reference/load_instrument.html">load_instrument()</a></code></strong> — compile a custom questionnaire from a ScoreMe JSON spec</li>
 <li>📁 <strong><code><a href="reference/load_instrument_dir.html">load_instrument_dir()</a></code></strong> — batch-load a directory of custom instrument specs</li>
 <li>📐 <strong><code><a href="reference/cronbach_alpha.html">cronbach_alpha()</a></code></strong> — compute Cronbach’s α with exact 95% CIs for any questionnaire in the data</li>
+<li>📐 <strong><code><a href="reference/omega_reliability.html">omega_reliability()</a></code></strong> — compute McDonald’s ω (total omega) via single-factor EFA</li>
+<li>🗂️ <strong><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code></strong> — print participant count, instruments, completion rates, and date range for any study object</li>
+<li>📊 <strong><code><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">tibble::as_tibble()</a></code></strong> — coerce any study object directly to a tibble via <code><a href="reference/scores_wide.html">scores_wide()</a></code>
+</li>
 </ul>
 <hr>
 </div>
@@ -182,10 +191,13 @@
 <pre><code>tallieR/
 ├── R/
 │   ├── tallieR-package.R              # package-level docs and workflow overview
-│   ├── import.R                       # read_scoreme(), read_scoreme_dir()
-│   ├── tidy.R                         # scores_wide(), scores_long(), items_long()
+│   ├── import.R                       # read_scoreme(), read_scoreme_dir(),
+│   │                                  # print/summary S3 methods
+│   ├── tidy.R                         # scores_wide(), scores_long(), items_long(),
+│   │                                  # completion_summary(), as_tibble methods
 │   ├── questionnaires.R               # score_questionnaire(), interpret_score(),
-│   │                                  # available_instruments(), score_all()
+│   │                                  # interpret_all(), available_instruments(),
+│   │                                  # score_all()
 │   ├── questionnaires_sleep.R         # ESS, ISI, DBAS-16, MEQ, PSQI, RU-SATED,
 │   │                                  # STOP-BANG, KSS, MCTQ
 │   ├── questionnaires_mental_health.R # PHQ-2/9/15, GAD-7/2, BDI-II, BAI,
@@ -194,7 +206,7 @@
 │   ├── questionnaires_physical_activity.R  # IPAQ-S, GPAQ
 │   ├── questionnaires_neurodevelopmental.R # GSQ, AQ-10
 │   ├── custom_instruments.R           # load_instrument(), load_instrument_dir()
-│   ├── reliability.R                  # cronbach_alpha()
+│   ├── reliability.R                  # cronbach_alpha(), omega_reliability()
 │   └── zzz.R                          # .onLoad() — assembles .INSTRUMENTS registry
 ├── inst/extdata/
 │   ├── example_export.json            # bundled 2-participant simulated export
@@ -205,7 +217,8 @@
 │   └── custom-instruments.Rmd         # loading and scoring custom questionnaires
 ├── tests/testthat/
 │   ├── test-questionnaires.R
-│   └── test-import.R
+│   ├── test-import.R
+│   └── test-reliability.R
 ├── logo.png
 ├── DESCRIPTION
 ├── LICENSE
@@ -366,7 +379,7 @@
 <p><strong>Note on PSQI:</strong> <code>score_questionnaire("psqi", answers)</code> returns a named list with <code>global</code> and seven component scores (<code>C1</code>–<code>C7</code>). Use <code>result$global</code> for the total.</p>
 </blockquote>
 <blockquote>
-<p><strong>Note on MCTQ:</strong> <code>score_questionnaire("mctq", answers)</code> returns a named list: <code>msfsc</code> (corrected mid-sleep on free days, decimal hours), <code>sjl</code> (social jetlag, hours), plus <code>msw</code>, <code>msf</code>, <code>sd_w</code>, <code>sd_f</code>. Expected answer keys: <code>bt_w</code>, <code>sl_w</code>, <code>wt_w</code>, <code>bt_f</code>, <code>sl_f</code>, <code>wt_f</code> (times as <code>{hour, minute}</code> lists or decimal hours; latencies as numeric minutes), and <code>wd</code> (workdays per week).</p>
+<p><strong>Note on MCTQ:</strong> <code>score_questionnaire("mctq", answers)</code> returns a named list: <code>msfsc</code> (corrected mid-sleep on free days, decimal hours), <code>sjl</code> (absolute social jetlag, hours), <code>sjl_rel</code> (signed social jetlag, hours), <code>msw</code>, <code>msf</code>, <code>sd_w</code>, <code>sd_f</code>, <code>sd_week</code> (weighted average sleep duration), <code>alarm_w</code>, <code>alarm_f</code> (logical alarm flags, <code>NA</code> if not captured). Expected answer keys: <code>bt_w</code>, <code>sl_w</code>, <code>wt_w</code>, <code>bt_f</code>, <code>sl_f</code>, <code>wt_f</code> (times as <code>{hour, minute}</code> lists or decimal hours; latencies as numeric minutes), <code>wd</code> (workdays per week), and optionally <code>alarm_w</code>/<code>alarm_f</code> (<code>"yes"</code>/<code>"no"</code>).</p>
 </blockquote>
 </div>
 <div class="section level3">
@@ -560,31 +573,83 @@
 <p>Supported scoring types compiled from the JSON spec: <code>"sum"</code>, <code>"weighted_sum"</code>, <code>"mean"</code>. Instruments with <code>"composite"</code> scoring (e.g. PSQI-style multi-component algorithms) can be loaded but return <code>NA</code> for scoring; you can override the compiled <code>score</code> function by assigning a custom one after loading:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_instr</span><span class="op">$</span><span class="va">my_id</span><span class="op">$</span><span class="va">score</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">answers</span><span class="op">)</span> <span class="op">{</span> <span class="va">...</span> <span class="op">}</span></span></code></pre></div>
-<p>See <code>vignette("custom-instruments", package = "tallieR")</code> and <code>system.file("extdata", "example_instrument.json", package = "tallieR")</code> for the full JSON spec schema.</p>
+<p>See <code><a href="articles/custom-instruments.html">vignette("custom-instruments", package = "tallieR")</a></code> and <code>system.file("extdata", "example_instrument.json", package = "tallieR")</code> for the full JSON spec schema.</p>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="triangular_ruler-reliability-analysis">📐 Reliability Analysis<a class="anchor" aria-label="anchor" href="#triangular_ruler-reliability-analysis"></a>
 </h2>
-<p><code><a href="reference/cronbach_alpha.html">cronbach_alpha()</a></code> computes Cronbach’s α with exact 95% confidence intervals (Feldt et al., 1987) for any questionnaire present in the data.</p>
+<p><code><a href="reference/cronbach_alpha.html">cronbach_alpha()</a></code> computes Cronbach’s α with exact 95% confidence intervals (Feldt et al., 1987). <code><a href="reference/omega_reliability.html">omega_reliability()</a></code> computes McDonald’s ω_t (total omega) via single-factor EFA — generally preferred for non-tau-equivalent items. Both functions share the same interface and output shape, making them easy to compare side by side.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">study</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme_dir.html">read_scoreme_dir</a></span><span class="op">(</span><span class="st">"exports/"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># All questionnaires</span></span>
+<span><span class="co"># Cronbach's alpha with exact CIs</span></span>
 <span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  questionnaire_id alpha ci_lower ci_upper n_items n_obs note</span></span>
 <span><span class="co">#&gt;               ess  0.87     0.82     0.91       8    48   NA</span></span>
 <span><span class="co">#&gt;               isi  0.91     0.87     0.94       7    48   NA</span></span>
-<span><span class="co">#&gt;               phq9 0.85     0.80     0.90       9    42   NA</span></span>
 <span><span class="co">#&gt;  ...</span></span>
 <span></span>
-<span><span class="co"># Specific subset</span></span>
-<span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">study</span>, questionnaires <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ess"</span>, <span class="st">"isi"</span>, <span class="st">"phq9"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># McDonald's omega</span></span>
+<span><span class="fu"><a href="reference/omega_reliability.html">omega_reliability</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># From an items_long() data frame (e.g. after filtering)</span></span>
+<span><span class="co"># Compare both side by side</span></span>
+<span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">study</span>, questionnaires <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ess"</span>, <span class="st">"isi"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">omega</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/omega_reliability.html">omega_reliability</a></span><span class="op">(</span><span class="va">study</span>, questionnaires <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ess"</span>, <span class="st">"isi"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">alpha</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"questionnaire_id"</span>, <span class="st">"alpha"</span>, <span class="st">"n_obs"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>      <span class="va">omega</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"questionnaire_id"</span>, <span class="st">"omega"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>      by <span class="op">=</span> <span class="st">"questionnaire_id"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Both accept an items_long() data frame directly</span></span>
 <span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/items_long.html">items_long</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span></span></code></pre></div>
-<p>Non-numeric items (MCTQ clock times, STOP-BANG yes/no) are silently dropped before estimation. The function accepts either a <code>tallier_export</code>/<code>tallier_study</code> object or a data frame returned by <code><a href="reference/items_long.html">items_long()</a></code>.</p>
+<p>Non-numeric items (MCTQ clock times, STOP-BANG yes/no) are silently dropped before estimation.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="bar_chart-study-monitoring">📊 Study Monitoring<a class="anchor" aria-label="anchor" href="#bar_chart-study-monitoring"></a>
+</h2>
+<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> gives a quick overview of any study object. <code><a href="reference/completion_summary.html">completion_summary()</a></code> returns a tidy data frame of completion status per participant and questionnaire — useful for longitudinal data monitoring.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Quick console overview</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ── tallier_study ───────────────────────────────────────</span></span>
+<span><span class="co">#&gt; • Participants: 48</span></span>
+<span><span class="co">#&gt; • Source files: 3</span></span>
+<span><span class="co">#&gt; • Instruments:  9</span></span>
+<span><span class="co">#&gt; ── Completion ─────────────────────────────────────────</span></span>
+<span><span class="co">#&gt;  ess: 48/48 (100%)</span></span>
+<span><span class="co">#&gt;  isi: 45/48 (93.8%)</span></span>
+<span><span class="co">#&gt;  ...</span></span>
+<span></span>
+<span><span class="co"># Programmatic access</span></span>
+<span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="va">completion</span></span>
+<span></span>
+<span><span class="co"># Tidy completion matrix (long format)</span></span>
+<span><span class="fu"><a href="reference/completion_summary.html">completion_summary</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Wide format: one row per participant, one column per questionnaire</span></span>
+<span><span class="fu"><a href="reference/completion_summary.html">completion_summary</a></span><span class="op">(</span><span class="va">study</span>, wide <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="speech_balloon-clinical-interpretations">💬 Clinical Interpretations<a class="anchor" aria-label="anchor" href="#speech_balloon-clinical-interpretations"></a>
+</h2>
+<p><code><a href="reference/interpret_all.html">interpret_all()</a></code> returns a long data frame of clinical interpretations for every result in a study, joinable with <code><a href="reference/scores_long.html">scores_long()</a></code> on <code>participant_id</code> + <code>questionnaire_id</code> + <code>completed_at</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">interps</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/interpret_all.html">interpret_all</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">interps</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"code"</span>, <span class="st">"questionnaire_id"</span>, <span class="st">"score"</span>, <span class="st">"label"</span>, <span class="st">"description"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Join with scores for a complete picture</span></span>
+<span><span class="va">scores</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_long.html">scores_long</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="va">full</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span></span>
+<span>  <span class="va">scores</span>,</span>
+<span>  <span class="va">interps</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"participant_id"</span>, <span class="st">"questionnaire_id"</span>, <span class="st">"completed_at"</span>,</span>
+<span>               <span class="st">"label"</span>, <span class="st">"color"</span>, <span class="st">"description"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"participant_id"</span>, <span class="st">"questionnaire_id"</span>, <span class="st">"completed_at"</span><span class="op">)</span>,</span>
+<span>  all.x <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">

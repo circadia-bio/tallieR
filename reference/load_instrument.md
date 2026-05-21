@@ -18,7 +18,8 @@ load_instrument(path)
 - path:
 
   Path to a `.json` file containing a ScoreMe instrument spec. See
-  `vignette("custom-instruments")` or
+  [`vignette("custom-instruments")`](https://tallier.circadia-lab.uk/articles/custom-instruments.md)
+  or
   `system.file("extdata", "example_instrument.json", package = "tallieR")`
   for the expected schema.
 

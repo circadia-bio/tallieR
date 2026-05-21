@@ -180,31 +180,203 @@ available_instruments()
 #> 24          gpaq                     Global Physical Activity Questionnaire
 #> 25           gsq                              Glasgow Sensory Questionnaire
 #> 26          aq10                Autism Spectrum Quotient - 10 item screener
-#>                domain max_score  beta
-#> 1               Sleep        24 FALSE
-#> 2               Sleep        28 FALSE
-#> 3               Sleep        10 FALSE
-#> 4               Sleep        86 FALSE
-#> 5               Sleep        21 FALSE
-#> 6               Sleep        24 FALSE
-#> 7               Sleep         8 FALSE
-#> 8               Sleep        10 FALSE
-#> 9               Sleep        NA FALSE
-#> 10      Mental Health         6  TRUE
-#> 11      Mental Health        27  TRUE
-#> 12      Mental Health        30  TRUE
-#> 13      Mental Health        21  TRUE
-#> 14      Mental Health         6  TRUE
-#> 15      Mental Health        63  TRUE
-#> 16      Mental Health        63  TRUE
-#> 17      Mental Health        42  TRUE
-#> 18      Mental Health       210  TRUE
-#> 19      Mental Health        80  TRUE
-#> 20      Mental Health        80  TRUE
-#> 21          Wellbeing       100  TRUE
-#> 22          Wellbeing        20  TRUE
-#> 23  Physical Activity        NA  TRUE
-#> 24  Physical Activity        NA  TRUE
-#> 25 Neurodevelopmental       112  TRUE
-#> 26 Neurodevelopmental        10  TRUE
+#>                domain max_score  beta has_reverse
+#> 1               Sleep        24 FALSE       FALSE
+#> 2               Sleep        28 FALSE       FALSE
+#> 3               Sleep        10 FALSE       FALSE
+#> 4               Sleep        86 FALSE       FALSE
+#> 5               Sleep        21 FALSE       FALSE
+#> 6               Sleep        24 FALSE       FALSE
+#> 7               Sleep         8 FALSE       FALSE
+#> 8               Sleep        10 FALSE       FALSE
+#> 9               Sleep        NA FALSE       FALSE
+#> 10      Mental Health         6  TRUE       FALSE
+#> 11      Mental Health        27  TRUE       FALSE
+#> 12      Mental Health        30  TRUE       FALSE
+#> 13      Mental Health        21  TRUE       FALSE
+#> 14      Mental Health         6  TRUE       FALSE
+#> 15      Mental Health        63  TRUE       FALSE
+#> 16      Mental Health        63  TRUE       FALSE
+#> 17      Mental Health        42  TRUE       FALSE
+#> 18      Mental Health       210  TRUE       FALSE
+#> 19      Mental Health        80  TRUE        TRUE
+#> 20      Mental Health        80  TRUE        TRUE
+#> 21          Wellbeing       100  TRUE       FALSE
+#> 22          Wellbeing        20  TRUE       FALSE
+#> 23  Physical Activity        NA  TRUE       FALSE
+#> 24  Physical Activity        NA  TRUE       FALSE
+#> 25 Neurodevelopmental       112  TRUE       FALSE
+#> 26 Neurodevelopmental        10  TRUE       FALSE
+```
+
+The `has_reverse` column flags instruments with item-level reverse
+scoring. Pass `scored_items = TRUE` to
+[`items_long()`](https://tallier.circadia-lab.uk/reference/items_long.md)
+to apply reversals automatically.
+
+## Study monitoring
+
+[`summary()`](https://rdrr.io/r/base/summary.html) prints a structured
+overview of participant count, instruments, completion rates, and date
+range:
+
+``` r
+
+summary(exp)
+#> 
+#> ── tallier_export ──────────────────────────────────────────────────────────────
+#> • Participants: 2
+#> • Exported: 2026-05-14T10:00:00.000Z
+#> • Instruments: 4
+#> 
+#> ── Completion ──
+#> 
+#>   ess: 2/2 (100%)
+#>   isi: 2/2 (100%)
+#>   meq: 1/2 (50%)
+#>   stopbang: 1/2 (50%)
+#> 
+#> ── Date range ──
+#> 
+#>   First: 2026-01-10T09:05:00.000Z
+#>   Last: 2026-01-11T10:20:00.000Z
+```
+
+Access the stats programmatically via the invisible return value:
+
+``` r
+
+s <- summary(exp)
+#> 
+#> ── tallier_export ──────────────────────────────────────────────────────────────
+#> • Participants: 2
+#> • Exported: 2026-05-14T10:00:00.000Z
+#> • Instruments: 4
+#> 
+#> ── Completion ──
+#> 
+#>   ess: 2/2 (100%)
+#>   isi: 2/2 (100%)
+#>   meq: 1/2 (50%)
+#>   stopbang: 1/2 (50%)
+#> 
+#> ── Date range ──
+#> 
+#>   First: 2026-01-10T09:05:00.000Z
+#>   Last: 2026-01-11T10:20:00.000Z
+s$completion
+#>   questionnaire_id n pct
+#> 1              ess 2 100
+#> 2              isi 2 100
+#> 3              meq 1  50
+#> 4         stopbang 1  50
+```
+
+[`completion_summary()`](https://tallier.circadia-lab.uk/reference/completion_summary.md)
+returns a tidy data frame of completion status per participant and
+questionnaire:
+
+``` r
+
+# Long format: one row per participant x questionnaire
+completion_summary(exp)
+#>   participant_id code          name age    sex  bmi        group      site
+#> 1  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle
+#> 2  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle
+#> 3  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle
+#> 4  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle
+#> 5  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle
+#> 6  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle
+#> 7  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle
+#> 8  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle
+#>    session diagnosis medication referral notes               created_at
+#> 1 baseline                                     2026-01-10T09:00:00.000Z
+#> 2 baseline                                     2026-01-10T09:00:00.000Z
+#> 3 baseline                                     2026-01-10T09:00:00.000Z
+#> 4 baseline                                     2026-01-10T09:00:00.000Z
+#> 5 baseline  insomnia                           2026-01-11T10:00:00.000Z
+#> 6 baseline  insomnia                           2026-01-11T10:00:00.000Z
+#> 7 baseline  insomnia                           2026-01-11T10:00:00.000Z
+#> 8 baseline  insomnia                           2026-01-11T10:00:00.000Z
+#>   shift_worker questionnaire_id completed             completed_at
+#> 1           no              ess      TRUE 2026-01-10T09:05:00.000Z
+#> 2           no              isi      TRUE 2026-01-10T09:10:00.000Z
+#> 3           no              meq      TRUE 2026-01-10T09:15:00.000Z
+#> 4           no         stopbang     FALSE                     <NA>
+#> 5          yes              ess      TRUE 2026-01-11T10:05:00.000Z
+#> 6          yes              isi      TRUE 2026-01-11T10:10:00.000Z
+#> 7          yes              meq     FALSE                     <NA>
+#> 8          yes         stopbang      TRUE 2026-01-11T10:20:00.000Z
+
+# Wide format: one logical column per questionnaire
+completion_summary(exp, wide = TRUE)
+#>   participant_id code          name age    sex  bmi        group      site
+#> 1  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle
+#> 2  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle
+#>    session diagnosis medication referral notes               created_at
+#> 1 baseline                                     2026-01-10T09:00:00.000Z
+#> 2 baseline  insomnia                           2026-01-11T10:00:00.000Z
+#>   shift_worker  ess  isi   meq stopbang
+#> 1           no TRUE TRUE  TRUE    FALSE
+#> 2          yes TRUE TRUE FALSE     TRUE
+```
+
+## Clinical interpretations
+
+[`interpret_all()`](https://tallier.circadia-lab.uk/reference/interpret_all.md)
+returns clinical interpretations for all results in one call, as a long
+data frame joinable with
+[`scores_long()`](https://tallier.circadia-lab.uk/reference/scores_long.md):
+
+``` r
+
+interps <- interpret_all(exp)
+interps[, c("code", "questionnaire_id", "score", "label")]
+#>   code questionnaire_id score                              label
+#> 1 P001              ess    10                          Excessive
+#> 2 P001              isi     5 No clinically significant insomnia
+#> 3 P001              meq    59              Moderate morning type
+#> 4 P002              ess    20                             Severe
+#> 5 P002              isi    22         Clinical insomnia (severe)
+#> 6 P002         stopbang     6                      High OSA risk
+```
+
+## Reverse-scored items
+
+For instruments with reverse-scored items (currently STAI-S and STAI-T),
+pass `scored_items = TRUE` to get a `response_scored` column alongside
+the raw `response`:
+
+``` r
+
+items_long(exp, scored_items = TRUE)
+```
+
+## Reliability analysis
+
+[`cronbach_alpha()`](https://tallier.circadia-lab.uk/reference/cronbach_alpha.md)
+computes Cronbach’s α with exact CIs.
+[`omega_reliability()`](https://tallier.circadia-lab.uk/reference/omega_reliability.md)
+computes McDonald’s ω via single-factor EFA — generally preferred for
+non-tau-equivalent items:
+
+``` r
+
+cronbach_alpha(exp)
+omega_reliability(exp)
+```
+
+Both accept a `tallier_export`/`tallier_study` object or an
+[`items_long()`](https://tallier.circadia-lab.uk/reference/items_long.md)
+data frame directly.
+
+## Tidyverse integration
+
+Any study object coerces directly to a tibble via
+[`scores_wide()`](https://tallier.circadia-lab.uk/reference/scores_wide.md):
+
+``` r
+
+library(tibble)
+tibble::as_tibble(exp)
 ```

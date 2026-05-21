@@ -108,6 +108,9 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with tallieR</a></li>
+    <li><a class="dropdown-item" href="../articles/custom-instruments.html">Custom instruments in tallieR</a></li>
+    <li><a class="dropdown-item" href="../articles/reliability-analysis.html">Reliability analysis in tallieR</a></li>
+    <li><a class="dropdown-item" href="../articles/longitudinal-data.html">Longitudinal data in tallieR</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
@@ -309,33 +312,179 @@ score:</p>
 <span><span class="co">#&gt; 24          gpaq                     Global Physical Activity Questionnaire</span></span>
 <span><span class="co">#&gt; 25           gsq                              Glasgow Sensory Questionnaire</span></span>
 <span><span class="co">#&gt; 26          aq10                Autism Spectrum Quotient - 10 item screener</span></span>
-<span><span class="co">#&gt;                domain max_score  beta</span></span>
-<span><span class="co">#&gt; 1               Sleep        24 FALSE</span></span>
-<span><span class="co">#&gt; 2               Sleep        28 FALSE</span></span>
-<span><span class="co">#&gt; 3               Sleep        10 FALSE</span></span>
-<span><span class="co">#&gt; 4               Sleep        86 FALSE</span></span>
-<span><span class="co">#&gt; 5               Sleep        21 FALSE</span></span>
-<span><span class="co">#&gt; 6               Sleep        24 FALSE</span></span>
-<span><span class="co">#&gt; 7               Sleep         8 FALSE</span></span>
-<span><span class="co">#&gt; 8               Sleep        10 FALSE</span></span>
-<span><span class="co">#&gt; 9               Sleep        NA FALSE</span></span>
-<span><span class="co">#&gt; 10      Mental Health         6  TRUE</span></span>
-<span><span class="co">#&gt; 11      Mental Health        27  TRUE</span></span>
-<span><span class="co">#&gt; 12      Mental Health        30  TRUE</span></span>
-<span><span class="co">#&gt; 13      Mental Health        21  TRUE</span></span>
-<span><span class="co">#&gt; 14      Mental Health         6  TRUE</span></span>
-<span><span class="co">#&gt; 15      Mental Health        63  TRUE</span></span>
-<span><span class="co">#&gt; 16      Mental Health        63  TRUE</span></span>
-<span><span class="co">#&gt; 17      Mental Health        42  TRUE</span></span>
-<span><span class="co">#&gt; 18      Mental Health       210  TRUE</span></span>
-<span><span class="co">#&gt; 19      Mental Health        80  TRUE</span></span>
-<span><span class="co">#&gt; 20      Mental Health        80  TRUE</span></span>
-<span><span class="co">#&gt; 21          Wellbeing       100  TRUE</span></span>
-<span><span class="co">#&gt; 22          Wellbeing        20  TRUE</span></span>
-<span><span class="co">#&gt; 23  Physical Activity        NA  TRUE</span></span>
-<span><span class="co">#&gt; 24  Physical Activity        NA  TRUE</span></span>
-<span><span class="co">#&gt; 25 Neurodevelopmental       112  TRUE</span></span>
-<span><span class="co">#&gt; 26 Neurodevelopmental        10  TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt;                domain max_score  beta has_reverse</span></span>
+<span><span class="co">#&gt; 1               Sleep        24 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 2               Sleep        28 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 3               Sleep        10 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 4               Sleep        86 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 5               Sleep        21 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 6               Sleep        24 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 7               Sleep         8 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 8               Sleep        10 FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 9               Sleep        NA FALSE       FALSE</span></span>
+<span><span class="co">#&gt; 10      Mental Health         6  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 11      Mental Health        27  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 12      Mental Health        30  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 13      Mental Health        21  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 14      Mental Health         6  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 15      Mental Health        63  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 16      Mental Health        63  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 17      Mental Health        42  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 18      Mental Health       210  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 19      Mental Health        80  TRUE        TRUE</span></span>
+<span><span class="co">#&gt; 20      Mental Health        80  TRUE        TRUE</span></span>
+<span><span class="co">#&gt; 21          Wellbeing       100  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 22          Wellbeing        20  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 23  Physical Activity        NA  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 24  Physical Activity        NA  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 25 Neurodevelopmental       112  TRUE       FALSE</span></span>
+<span><span class="co">#&gt; 26 Neurodevelopmental        10  TRUE       FALSE</span></span></code></pre></div>
+<p>The <code>has_reverse</code> column flags instruments with item-level
+reverse scoring. Pass <code>scored_items = TRUE</code> to
+<code><a href="../reference/items_long.html">items_long()</a></code> to apply reversals automatically.</p>
+</div>
+<div class="section level2">
+<h2 id="study-monitoring">Study monitoring<a class="anchor" aria-label="anchor" href="#study-monitoring"></a>
+</h2>
+<p><code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> prints a structured overview of participant
+count, instruments, completion rates, and date range:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">tallier_export</span> <span style="color: #00BBBB;">──────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Participants: 2</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Exported: 2026-05-14T10:00:00.000Z</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Instruments: 4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── <span style="font-weight: bold;">Completion</span> ──</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   ess: 2/2 (100%)</span></span>
+<span><span class="co">#&gt;   isi: 2/2 (100%)</span></span>
+<span><span class="co">#&gt;   meq: 1/2 (50%)</span></span>
+<span><span class="co">#&gt;   stopbang: 1/2 (50%)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── <span style="font-weight: bold;">Date range</span> ──</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   First: 2026-01-10T09:05:00.000Z</span></span>
+<span><span class="co">#&gt;   Last: 2026-01-11T10:20:00.000Z</span></span></code></pre></div>
+<p>Access the stats programmatically via the invisible return value:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">tallier_export</span> <span style="color: #00BBBB;">──────────────────────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Participants: 2</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Exported: 2026-05-14T10:00:00.000Z</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">•</span> Instruments: 4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── <span style="font-weight: bold;">Completion</span> ──</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   ess: 2/2 (100%)</span></span>
+<span><span class="co">#&gt;   isi: 2/2 (100%)</span></span>
+<span><span class="co">#&gt;   meq: 1/2 (50%)</span></span>
+<span><span class="co">#&gt;   stopbang: 1/2 (50%)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ── <span style="font-weight: bold;">Date range</span> ──</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;   First: 2026-01-10T09:05:00.000Z</span></span>
+<span><span class="co">#&gt;   Last: 2026-01-11T10:20:00.000Z</span></span>
+<span><span class="va">s</span><span class="op">$</span><span class="va">completion</span></span>
+<span><span class="co">#&gt;   questionnaire_id n pct</span></span>
+<span><span class="co">#&gt; 1              ess 2 100</span></span>
+<span><span class="co">#&gt; 2              isi 2 100</span></span>
+<span><span class="co">#&gt; 3              meq 1  50</span></span>
+<span><span class="co">#&gt; 4         stopbang 1  50</span></span></code></pre></div>
+<p><code><a href="../reference/completion_summary.html">completion_summary()</a></code> returns a tidy data frame of
+completion status per participant and questionnaire:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Long format: one row per participant x questionnaire</span></span>
+<span><span class="fu"><a href="../reference/completion_summary.html">completion_summary</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   participant_id code          name age    sex  bmi        group      site</span></span>
+<span><span class="co">#&gt; 1  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle</span></span>
+<span><span class="co">#&gt; 2  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle</span></span>
+<span><span class="co">#&gt; 3  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle</span></span>
+<span><span class="co">#&gt; 4  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle</span></span>
+<span><span class="co">#&gt; 5  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle</span></span>
+<span><span class="co">#&gt; 6  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle</span></span>
+<span><span class="co">#&gt; 7  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle</span></span>
+<span><span class="co">#&gt; 8  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle</span></span>
+<span><span class="co">#&gt;    session diagnosis medication referral notes               created_at</span></span>
+<span><span class="co">#&gt; 1 baseline                                     2026-01-10T09:00:00.000Z</span></span>
+<span><span class="co">#&gt; 2 baseline                                     2026-01-10T09:00:00.000Z</span></span>
+<span><span class="co">#&gt; 3 baseline                                     2026-01-10T09:00:00.000Z</span></span>
+<span><span class="co">#&gt; 4 baseline                                     2026-01-10T09:00:00.000Z</span></span>
+<span><span class="co">#&gt; 5 baseline  insomnia                           2026-01-11T10:00:00.000Z</span></span>
+<span><span class="co">#&gt; 6 baseline  insomnia                           2026-01-11T10:00:00.000Z</span></span>
+<span><span class="co">#&gt; 7 baseline  insomnia                           2026-01-11T10:00:00.000Z</span></span>
+<span><span class="co">#&gt; 8 baseline  insomnia                           2026-01-11T10:00:00.000Z</span></span>
+<span><span class="co">#&gt;   shift_worker questionnaire_id completed             completed_at</span></span>
+<span><span class="co">#&gt; 1           no              ess      TRUE 2026-01-10T09:05:00.000Z</span></span>
+<span><span class="co">#&gt; 2           no              isi      TRUE 2026-01-10T09:10:00.000Z</span></span>
+<span><span class="co">#&gt; 3           no              meq      TRUE 2026-01-10T09:15:00.000Z</span></span>
+<span><span class="co">#&gt; 4           no         stopbang     FALSE                     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5          yes              ess      TRUE 2026-01-11T10:05:00.000Z</span></span>
+<span><span class="co">#&gt; 6          yes              isi      TRUE 2026-01-11T10:10:00.000Z</span></span>
+<span><span class="co">#&gt; 7          yes              meq     FALSE                     &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8          yes         stopbang      TRUE 2026-01-11T10:20:00.000Z</span></span>
+<span></span>
+<span><span class="co"># Wide format: one logical column per questionnaire</span></span>
+<span><span class="fu"><a href="../reference/completion_summary.html">completion_summary</a></span><span class="op">(</span><span class="va">exp</span>, wide <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   participant_id code          name age    sex  bmi        group      site</span></span>
+<span><span class="co">#&gt; 1  1715680000001 P001 Alice Example  28 female 22.4      control Newcastle</span></span>
+<span><span class="co">#&gt; 2  1715680000002 P002   Bob Example  45   male 31.2 intervention Newcastle</span></span>
+<span><span class="co">#&gt;    session diagnosis medication referral notes               created_at</span></span>
+<span><span class="co">#&gt; 1 baseline                                     2026-01-10T09:00:00.000Z</span></span>
+<span><span class="co">#&gt; 2 baseline  insomnia                           2026-01-11T10:00:00.000Z</span></span>
+<span><span class="co">#&gt;   shift_worker  ess  isi   meq stopbang</span></span>
+<span><span class="co">#&gt; 1           no TRUE TRUE  TRUE    FALSE</span></span>
+<span><span class="co">#&gt; 2          yes TRUE TRUE FALSE     TRUE</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="clinical-interpretations">Clinical interpretations<a class="anchor" aria-label="anchor" href="#clinical-interpretations"></a>
+</h2>
+<p><code><a href="../reference/interpret_all.html">interpret_all()</a></code> returns clinical interpretations for all
+results in one call, as a long data frame joinable with
+<code><a href="../reference/scores_long.html">scores_long()</a></code>:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">interps</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/interpret_all.html">interpret_all</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="va">interps</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"code"</span>, <span class="st">"questionnaire_id"</span>, <span class="st">"score"</span>, <span class="st">"label"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   code questionnaire_id score                              label</span></span>
+<span><span class="co">#&gt; 1 P001              ess    10                          Excessive</span></span>
+<span><span class="co">#&gt; 2 P001              isi     5 No clinically significant insomnia</span></span>
+<span><span class="co">#&gt; 3 P001              meq    59              Moderate morning type</span></span>
+<span><span class="co">#&gt; 4 P002              ess    20                             Severe</span></span>
+<span><span class="co">#&gt; 5 P002              isi    22         Clinical insomnia (severe)</span></span>
+<span><span class="co">#&gt; 6 P002         stopbang     6                      High OSA risk</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="reverse-scored-items">Reverse-scored items<a class="anchor" aria-label="anchor" href="#reverse-scored-items"></a>
+</h2>
+<p>For instruments with reverse-scored items (currently STAI-S and
+STAI-T), pass <code>scored_items = TRUE</code> to get a
+<code>response_scored</code> column alongside the raw
+<code>response</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/items_long.html">items_long</a></span><span class="op">(</span><span class="va">exp</span>, scored_items <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="reliability-analysis">Reliability analysis<a class="anchor" aria-label="anchor" href="#reliability-analysis"></a>
+</h2>
+<p><code><a href="../reference/cronbach_alpha.html">cronbach_alpha()</a></code> computes Cronbach’s α with exact CIs.
+<code><a href="../reference/omega_reliability.html">omega_reliability()</a></code> computes McDonald’s ω via single-factor
+EFA — generally preferred for non-tau-equivalent items:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/omega_reliability.html">omega_reliability</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
+<p>Both accept a <code>tallier_export</code>/<code>tallier_study</code>
+object or an <code><a href="../reference/items_long.html">items_long()</a></code> data frame directly.</p>
+</div>
+<div class="section level2">
+<h2 id="tidyverse-integration">Tidyverse integration<a class="anchor" aria-label="anchor" href="#tidyverse-integration"></a>
+</h2>
+<p>Any study object coerces directly to a tibble via
+<code><a href="../reference/scores_wide.html">scores_wide()</a></code>:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
+<span><span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
