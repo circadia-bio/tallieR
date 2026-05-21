@@ -102,7 +102,7 @@ score_questionnaire("psqi", psqi_answers)
 available_instruments()
 ```
 
-The `has_reverse` column flags instruments with item-level reverse scoring. Pass `scored_items = TRUE` to `items_long()` to apply reversals automatically.
+The `has_reverse` column flags instruments with item-level reverse scoring (currently STAI-S and STAI-T). Pass `scored_items = TRUE` to `items_long()` to apply reversals automatically. The `returns_list` column flags composite instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) whose `score_questionnaire()` result is a named list of subscale scores rather than a single number — in `scores_wide()` these appear as their primary summary scalar.
 
 ## Study monitoring
 

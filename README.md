@@ -36,7 +36,7 @@ tallieR is designed to work alongside [slumbR](https://github.com/circadia-bio/s
 - 🧮 **`score_questionnaire()`** — re-score any built-in instrument from a raw answers list
 - 💬 **`interpret_score()`** — return the clinical score band (label, colour, description) for any score
 - 💬 **`interpret_all()`** — return clinical interpretations for all results in a study as a long data frame
-- 📋 **`available_instruments()`** — list all supported questionnaires with IDs, domains, beta status, and reverse-scoring flags
+- 📋 **`available_instruments()`** — list all supported questionnaires with IDs, domains, beta status, reverse-scoring flags, and a `returns_list` indicator for composite instruments
 - 📁 **`load_instrument()`** — compile a custom questionnaire from a ScoreMe JSON spec
 - 📁 **`load_instrument_dir()`** — batch-load a directory of custom instrument specs
 - 📐 **`cronbach_alpha()`** — compute Cronbach's α with exact 95% CIs for any questionnaire in the data
@@ -68,7 +68,7 @@ tallieR/
 │   ├── questionnaires_neurodevelopmental.R # GSQ, AQ-10
 │   ├── custom_instruments.R           # load_instrument(), load_instrument_dir()
 │   ├── reliability.R                  # cronbach_alpha(), omega_reliability()
-│   └── zzz.R                          # .onLoad() — assembles .INSTRUMENTS registry
+│   └── zzz.R                          # `%||%` operator; .onLoad() assembles .INSTRUMENTS registry
 ├── inst/extdata/
 │   ├── example_export.json            # bundled 2-participant simulated export
 │   └── example_instrument.json       # example custom instrument spec
@@ -111,6 +111,7 @@ library(tallieR)
 exp <- read_scoreme("my_study_export.json")
 exp
 #> ℹ tallier_export: 12 participants | exported 2026-05-14T10:00:00.000Z
+#>    Instruments (4): ess, isi, meq, psqi
 
 # ── Wide table: one row per participant ──────────────────────────────────────
 wide <- scores_wide(exp)
