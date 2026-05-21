@@ -195,3 +195,116 @@ test_that("cronbach_alpha: CI respects conf_level", {
   width80 <- r80$ci_upper - r80$ci_lower
   expect_gt(width95, width80)
 })
+
+# ── omega_reliability() ────────────────────────────────────────────────────────
+
+test_that(".omega_from_matrix: returns value in [0, 1] for well-conditioned data", {
+  set.seed(42)
+  shared <- rnorm(60)
+  mat <- cbind(shared + rnorm(60, sd = 0.3),
+               shared + rnorm(60, sd = 0.3),
+               shared + rnorm(60, sd = 0.3),
+               shared + rnorm(60, sd = 0.3))
+  res <- tallieR:::.omega_from_matrix(mat)
+  expect_true(is.numeric(res$omega))
+  expect_gte(res$omega, 0)
+  expect_lte(res$omega, 1)
+  expect_true(is.na(res$note))
+})
+
+test_that(".omega_from_matrix: fewer than 2 items returns NA", {
+  mat <- matrix(1:10, ncol = 1L)
+  res <- tallieR:::.omega_from_matrix(mat)
+  expect_true(is.na(res$omega))
+  expect_match(res$note, "2 numeric items")
+})
+
+test_that(".omega_from_matrix: n <= k returns NA with informative note", {
+  # 4 observations, 5 items: singular covariance
+  mat <- matrix(rnorm(20), nrow = 4L, ncol = 5L)
+  res <- tallieR:::.omega_from_matrix(mat)
+  expect_true(is.na(res$omega))
+  expect_match(res$note, "singular")
+})
+
+test_that("omega_reliability: correct shape and range", {
+  set.seed(7)
+  n <- 50L
+  shared <- rnorm(n)
+  mat_ess <- matrix(
+    pmin(3L, pmax(0L, round(outer(shared * 0.8, rep(1, 8)) +
+                               matrix(rnorm(n * 8, sd = 0.5), n, 8L)))),
+    nrow = n, ncol = 8L,
+    dimnames = list(NULL, paste0("ess", 1:8))
+  )
+  export <- .make_export(list(ess = mat_ess))
+  result <- omega_reliability(export)
+
+  expect_s3_class(result, "data.frame")
+  expect_equal(nrow(result), 1L)
+  expect_equal(result$questionnaire_id, "ess")
+  expect_true(all(c("omega", "n_items", "n_obs", "note") %in% names(result)))
+  expect_gte(result$omega, 0)
+  expect_lte(result$omega, 1)
+  expect_equal(result$n_items, 8L)
+  expect_equal(result$n_obs,   n)
+})
+
+test_that("omega_reliability: accepts items_long() data frame", {
+  set.seed(13)
+  n <- 40L
+  s <- rnorm(n)
+  mat <- matrix(
+    pmin(3, pmax(0, round(outer(s * 1.5, rep(1, 7)) +
+                             matrix(rnorm(n * 7, sd = 0.4), n, 7L)))),
+    nrow = n, dimnames = list(NULL, paste0("isi", 1:7))
+  )
+  export <- .make_export(list(isi = mat))
+  items  <- items_long(export)
+  result <- omega_reliability(items)
+  expect_equal(nrow(result), 1L)
+  expect_equal(result$questionnaire_id, "isi")
+  expect_true(is.numeric(result$omega))
+})
+
+test_that("omega_reliability: n <= k produces NA with note", {
+  # 3 participants, 8 items: factanal will fail
+  set.seed(1)
+  mat <- matrix(round(runif(24, 0, 3)), nrow = 3L, ncol = 8L,
+                dimnames = list(NULL, paste0("ess", 1:8)))
+  export <- .make_export(list(ess = mat))
+  result <- omega_reliability(export)
+  expect_true(is.na(result$omega))
+  expect_false(is.na(result$note))
+})
+
+test_that("omega_reliability: questionnaires filter works", {
+  set.seed(77)
+  n <- 30L
+  s <- rnorm(n)
+  make_m <- function(k, pfx) {
+    matrix(pmin(3, pmax(0, round(outer(s, rep(1, k)) +
+                                   matrix(rnorm(n * k, sd = 0.5), n, k)))),
+           nrow = n, dimnames = list(NULL, paste0(pfx, seq_len(k))))
+  }
+  export <- .make_export(list(ess = make_m(8L, "ess"), isi = make_m(7L, "isi")))
+  result <- omega_reliability(export, questionnaires = "ess")
+  expect_equal(nrow(result), 1L)
+  expect_equal(result$questionnaire_id, "ess")
+})
+
+test_that("omega_reliability: omega >= alpha for congeneric items", {
+  # For congeneric items (unequal loadings), omega >= alpha is expected
+  set.seed(55)
+  n <- 80L
+  # Deliberately unequal loadings
+  loadings <- c(0.9, 0.7, 0.5, 0.3, 0.8, 0.6, 0.4, 0.2)
+  shared   <- rnorm(n)
+  mat <- sapply(loadings, function(l) l * shared + sqrt(1 - l^2) * rnorm(n))
+  colnames(mat) <- paste0("q", seq_along(loadings))
+  export <- .make_export(list(q = mat))
+
+  alpha_res <- cronbach_alpha(export)
+  omega_res <- omega_reliability(export)
+  expect_gte(omega_res$omega, alpha_res$alpha - 0.01)  # allow tiny numerical tolerance
+})

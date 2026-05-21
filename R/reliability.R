@@ -1,6 +1,7 @@
 # R/reliability.R -- Internal consistency / reliability utilities
 #
 # cronbach_alpha()  -- Cronbach's alpha for one or more questionnaires
+# omega_reliability() -- McDonald's omega (total) for one or more questionnaires
 
 # ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -269,4 +270,214 @@ cronbach_alpha <- function(obj,
     note             = character(0),
     stringsAsFactors = FALSE
   )
+}
+
+# ─── omega_reliability() ───────────────────────────────────────────────────────
+
+#' Compute McDonald's omega (total) from a numeric item matrix
+#'
+#' Uses a single-factor EFA via `stats::factanal()` to extract factor loadings,
+#' then applies the omega_t formula:
+#' `omega = (sum(lambda))^2 / ((sum(lambda))^2 + sum(1 - lambda^2))`
+#' where `lambda` are the standardised factor loadings.
+#'
+#' @param mat A numeric matrix (participants x items), complete cases only.
+#' @return Named list with `omega`, `n_items`, `n_obs`, `note`.
+#' @keywords internal
+.omega_from_matrix <- function(mat) {
+  k <- ncol(mat)
+  n <- nrow(mat)
+
+  if (k < 2L) return(list(omega = NA_real_, n_items = k, n_obs = n,
+                           note = "Need at least 2 numeric items."))
+  if (n < 2L) return(list(omega = NA_real_, n_items = k, n_obs = n,
+                           note = "Need at least 2 complete observations."))
+  if (n <= k) return(list(omega = NA_real_, n_items = k, n_obs = n,
+                           note = "More items than observations; covariance matrix is singular."))
+
+  fa <- tryCatch(
+    stats::factanal(mat, factors = 1L, rotation = "none"),
+    error   = function(e) NULL,
+    warning = function(w) {
+      # factanal warns (not errors) on non-convergence; treat as failure
+      tryCatch(stats::factanal(mat, factors = 1L, rotation = "none"),
+               error = function(e) NULL)
+    }
+  )
+
+  if (is.null(fa)) return(list(omega = NA_real_, n_items = k, n_obs = n,
+                                note = "Factor analysis did not converge."))
+
+  loadings <- as.numeric(fa$loadings)
+
+  # McDonald's omega_t
+  sum_lambda  <- sum(loadings)
+  sum_err_var <- sum(1 - loadings^2)
+  omega       <- sum_lambda^2 / (sum_lambda^2 + sum_err_var)
+
+  list(omega   = omega,
+       n_items = k,
+       n_obs   = n,
+       note    = NA_character_)
+}
+
+#' @keywords internal
+.empty_omega_df <- function() {
+  data.frame(
+    questionnaire_id = character(0),
+    omega            = numeric(0),
+    n_items          = integer(0),
+    n_obs            = integer(0),
+    note             = character(0),
+    stringsAsFactors = FALSE
+  )
+}
+
+#' McDonald's omega for one or more questionnaires
+#'
+#' Computes McDonald's omega (\eqn{\omega_t}, total omega) as a measure of
+#' internal consistency for each questionnaire present in a `tallier_export`
+#' or `tallier_study` object. Omega is generally preferred over Cronbach's
+#' alpha for non-tau-equivalent items (i.e. items with unequal factor
+#' loadings), which is the norm in most psychological questionnaires.
+#'
+#' Estimation uses a single-factor EFA via [stats::factanal()]. The formula
+#' applied is:
+#' \deqn{\omega_t = \frac{(\sum \lambda_i)^2}{(\sum \lambda_i)^2 + \sum(1 - \lambda_i^2)}}
+#' where \eqn{\lambda_i} are the standardised factor loadings.
+#'
+#' Non-numeric items (e.g. MCTQ clock times, STOP-BANG yes/no) are silently
+#' dropped before estimation. Questionnaires with fewer items than observations,
+#' fewer than 2 numeric items, or non-convergent factor solutions return `NA`
+#' with an explanatory note.
+#'
+#' @param obj A `tallier_export` or `tallier_study` object, or a data frame
+#'   as returned by [items_long()] (must contain columns `participant_id`,
+#'   `questionnaire_id`, `item_id`, `completed_at`, `response`).
+#' @param questionnaires Character vector of questionnaire IDs to include.
+#'   Defaults to all questionnaires present in `obj`.
+#' @param min_items Integer. Minimum number of numeric items required to
+#'   attempt estimation (default `2`).
+#'
+#' @return A `data.frame` with one row per questionnaire and columns:
+#'   \describe{
+#'     \item{questionnaire_id}{Questionnaire identifier.}
+#'     \item{omega}{McDonald's omega_t. Range: 0 to 1.}
+#'     \item{n_items}{Number of numeric items used.}
+#'     \item{n_obs}{Number of complete observations (participants).}
+#'     \item{note}{`NA` on success, or a short message explaining why
+#'       estimation failed.}
+#'   }
+#'
+#' @references
+#' McDonald, R. P. (1999). *Test theory: A unified treatment*.
+#' Lawrence Erlbaum Associates.
+#'
+#' Revelle, W., & Zinbarg, R. E. (2009). Coefficients alpha, beta, omega,
+#' and the glb: Comments on Sijtsma. *Psychometrika*, 74(1), 145–154.
+#' \doi{10.1007/s11336-008-9102-z}
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#'
+#' # All questionnaires
+#' omega_reliability(study)
+#'
+#' # Compare alpha and omega side by side
+#' alpha <- cronbach_alpha(study, questionnaires = c("ess", "isi"))
+#' omega <- omega_reliability(study, questionnaires = c("ess", "isi"))
+#' merge(alpha[, c("questionnaire_id", "alpha", "n_obs")],
+#'       omega[, c("questionnaire_id", "omega")],
+#'       by = "questionnaire_id")
+#' }
+#'
+#' @seealso [cronbach_alpha()]
+#'
+#' @export
+omega_reliability <- function(obj,
+                              questionnaires = NULL,
+                              min_items      = 2L) {
+  min_items <- as.integer(min_items)
+
+  # Accept either a tallier object or an items_long() data frame
+  if (is.data.frame(obj)) {
+    items <- obj
+    required <- c("participant_id", "questionnaire_id", "item_id",
+                  "completed_at", "response")
+    missing  <- setdiff(required, names(items))
+    if (length(missing) > 0L) {
+      rlang::abort(paste0(
+        "When passing a data frame, it must have columns: ",
+        paste(required, collapse = ", "), ". Missing: ",
+        paste(missing, collapse = ", "), "."
+      ))
+    }
+  } else {
+    items <- items_long(obj)
+  }
+
+  if (nrow(items) == 0L) {
+    rlang::warn("No item-level data found in `obj`. Returning empty data frame.")
+    return(.empty_omega_df())
+  }
+
+  all_qs <- unique(items$questionnaire_id)
+
+  if (!is.null(questionnaires)) {
+    unknown <- setdiff(questionnaires, all_qs)
+    if (length(unknown) > 0L) {
+      rlang::warn(paste0(
+        "Questionnaire(s) not found in data and will be skipped: ",
+        paste(unknown, collapse = ", ")
+      ))
+    }
+    all_qs <- intersect(questionnaires, all_qs)
+  }
+
+  if (length(all_qs) == 0L) {
+    rlang::warn("No matching questionnaires found. Returning empty data frame.")
+    return(.empty_omega_df())
+  }
+
+  rows <- lapply(all_qs, function(qid) {
+    slice <- items[items$questionnaire_id == qid, ]
+    mat   <- .items_to_matrix(slice)
+
+    if (is.null(mat)) {
+      return(data.frame(
+        questionnaire_id = qid,
+        omega   = NA_real_,
+        n_items = 0L,
+        n_obs   = 0L,
+        note    = "No numeric items or no complete observations.",
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    if (ncol(mat) < min_items) {
+      return(data.frame(
+        questionnaire_id = qid,
+        omega   = NA_real_,
+        n_items = ncol(mat),
+        n_obs   = nrow(mat),
+        note    = paste0("Fewer than min_items (", min_items, ") numeric items."),
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    res <- .omega_from_matrix(mat)
+    data.frame(
+      questionnaire_id = qid,
+      omega   = res$omega,
+      n_items = res$n_items,
+      n_obs   = res$n_obs,
+      note    = res$note,
+      stringsAsFactors = FALSE
+    )
+  })
+
+  out <- do.call(rbind, rows)
+  rownames(out) <- NULL
+  out
 }
