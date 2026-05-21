@@ -175,23 +175,53 @@
   wd   <- as.numeric(answers[["wd"]]   %||% 5)
   fd   <- 7 - wd
 
+  # Sleep onset and duration on workdays
   so_w <- bt_w + sl_w
   sd_w <- wt_w - so_w; if (sd_w <= 0) sd_w <- sd_w + 24
+  # Mid-sleep on workdays (clock hours)
   msw  <- so_w + sd_w / 2
 
+  # Sleep onset and duration on free days
   so_f <- bt_f + sl_f
   sd_f <- wt_f - so_f; if (sd_f <= 0) sd_f <- sd_f + 24
+  # Mid-sleep on free days (clock hours, uncorrected)
   msf  <- so_f + sd_f / 2
 
-  sd_week  <- (sd_w * wd + sd_f * fd) / 7
-  deficit  <- sd_week - sd_w
-  msfsc    <- if (deficit > 0) msf - deficit / 2 else msf
+  # Average sleep duration across the full week
+  sd_week <- (sd_w * wd + sd_f * fd) / 7
 
+  # MSFsc: MSF corrected for sleep debt accumulated over the workweek.
+  # If free-day sleep is longer than workday sleep (positive deficit), the
+  # excess is split equally across each free night and subtracted from MSF.
+  deficit <- sd_week - sd_w
+  msfsc   <- if (deficit > 0) msf - deficit / 2 else msf
+
+  # SJL (absolute): unsigned difference between MSF and MSW.
+  # Reflects the magnitude of circadian misalignment regardless of direction.
   sjl <- abs(msf - msw)
 
-  list(msfsc = round(msfsc %% 24, 2), sjl = round(sjl, 2),
-       msw = round(msw %% 24, 2), msf = round(msf %% 24, 2),
-       sd_w = round(sd_w, 2), sd_f = round(sd_f, 2))
+  # SJL_rel (relative / signed): MSFsc - MSW, both normalised to clock time.
+  # Positive values indicate a later circadian phase on free days (the typical
+  # direction); negative values indicate an earlier phase on free days.
+  sjl_rel <- (msfsc %% 24) - (msw %% 24)
+
+  # Alarm flags: optional items captured by ScoreMe (yes/no).
+  # Returns NA if the item was not included in the export.
+  alarm_w <- if (!is.null(answers[["alarm_w"]])) identical(answers[["alarm_w"]], "yes") else NA
+  alarm_f <- if (!is.null(answers[["alarm_f"]])) identical(answers[["alarm_f"]], "yes") else NA
+
+  list(
+    msfsc   = round(msfsc %% 24, 2),   # Corrected mid-sleep on free days (h, clock time)
+    sjl     = round(sjl, 2),            # Absolute social jetlag (h)
+    sjl_rel = round(sjl_rel, 2),        # Relative (signed) social jetlag (h)
+    msw     = round(msw %% 24, 2),      # Mid-sleep on workdays (h, clock time)
+    msf     = round(msf %% 24, 2),      # Mid-sleep on free days (h, clock time)
+    sd_w    = round(sd_w, 2),           # Sleep duration on workdays (h)
+    sd_f    = round(sd_f, 2),           # Sleep duration on free days (h)
+    sd_week = round(sd_week, 2),        # Average sleep duration across the week (h)
+    alarm_w = alarm_w,                  # Alarm used on workdays (logical or NA)
+    alarm_f = alarm_f                   # Alarm used on free days (logical or NA)
+  )
 }
 
 .interpret_mctq <- function(score) {

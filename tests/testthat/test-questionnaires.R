@@ -87,10 +87,49 @@ test_that("score_questionnaire: MCTQ", {
   )
   result <- score_questionnaire("mctq", answers)
   expect_true(is.list(result))
-  expect_true(all(c("msfsc", "sjl", "msw", "msf", "sd_w", "sd_f") %in% names(result)))
+
+  # All expected fields present
+  expect_true(all(c("msfsc", "sjl", "sjl_rel", "msw", "msf",
+                    "sd_w", "sd_f", "sd_week",
+                    "alarm_w", "alarm_f") %in% names(result)))
+
+  # sjl is absolute (non-negative)
   expect_gte(result$sjl, 0)
+
+  # sd_week is a weighted average of sd_w and sd_f (5 workdays, 2 free days)
+  # sd_w: 07:00 - (23:00 + 15/60) = 7.75h; sd_f: 09:00 - (00:30 + 10/60) = 8.33h
+  expected_sd_week <- round((result$sd_w * 5 + result$sd_f * 2) / 7, 2)
+  expect_equal(result$sd_week, expected_sd_week)
+
+  # sjl_rel is signed: MSFsc - MSW, both as normalised clock times.
+  # Check sign and that it is consistent with the stored msfsc/msw to within
+  # rounding tolerance (independent rounding of each field can cause 0.01 drift).
+  expect_true(is.numeric(result$sjl_rel))
+  expect_equal(result$sjl_rel, round(result$msfsc - result$msw, 2),
+               tolerance = 0.02)
+
+  # alarm flags absent from answers -> NA
+  expect_true(is.na(result$alarm_w))
+  expect_true(is.na(result$alarm_f))
+
+  # interpret still works
   interp <- interpret_score("mctq", result)
   expect_true(nchar(interp$label) > 0)
+})
+
+test_that("MCTQ alarm flags parsed correctly when present", {
+  answers_alarm <- list(
+    bt_w = list(hour = 23, minute = 0), sl_w = 15,
+    wt_w = list(hour =  7, minute = 0),
+    bt_f = list(hour =  0, minute = 0),  sl_f = 10,
+    wt_f = list(hour =  9, minute = 0),
+    wd   = 5,
+    alarm_w = "yes",
+    alarm_f = "no"
+  )
+  result <- score_questionnaire("mctq", answers_alarm)
+  expect_true(isTRUE(result$alarm_w))
+  expect_true(isFALSE(result$alarm_f))
 })
 
 # ── Mental Health ─────────────────────────────────────────────────────────────
