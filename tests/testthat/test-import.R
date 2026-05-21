@@ -228,3 +228,90 @@ test_that("completion_summary() returns empty data frame for empty export", {
   expect_true(is.data.frame(out))
   expect_equal(nrow(out), 0L)
 })
+
+# ── items_long(scored_items = TRUE) ─────────────────────────────────────────────
+
+.make_stai_export <- function() {
+  # STAI-S: 20 items rated 1-4
+  # Reverse items: 1,2,5,8,10,11,15,16,19,20 -> scored as 5 - raw
+  stai_s_answers <- as.list(stats::setNames(rep(3L, 20L), paste0("stais_", 1:20)))
+
+  structure(
+    list(
+      exported_at    = "2026-01-01T00:00:00.000Z",
+      export_version = "1.0",
+      n_participants = 1L,
+      participants   = list(
+        list(
+          meta    = list(participant_id = "p1", code = "P001", name = "Test",
+                         age = "30", sex = "female", bmi = "", group = "",
+                         site = "", session = "", diagnosis = "",
+                         medication = "", referral = "", notes = "",
+                         created_at = "2026-01-01T00:00:00.000Z"),
+          results = list(
+            list(questionnaire_id = "stai_s",
+                 completed_at     = "2026-01-01T09:00:00.000Z",
+                 score            = 50L,
+                 answers          = stai_s_answers)
+          )
+        )
+      )
+    ),
+    class = "tallier_export"
+  )
+}
+
+test_that("items_long scored_items = FALSE returns no response_scored column", {
+  obj <- .make_stai_export()
+  out <- suppressWarnings(items_long(obj, scored_items = FALSE))
+  expect_false("response_scored" %in% names(out))
+})
+
+test_that("items_long scored_items = TRUE adds response_scored column", {
+  obj <- .make_stai_export()
+  out <- suppressWarnings(items_long(obj, scored_items = TRUE))
+  expect_true("response_scored" %in% names(out))
+})
+
+test_that("items_long scored_items = TRUE reverses STAI-S items correctly", {
+  obj <- .make_stai_export()
+  out <- suppressWarnings(items_long(obj, scored_items = TRUE))
+
+  reverse_ids <- paste0("stais_", c(1, 2, 5, 8, 10, 11, 15, 16, 19, 20))
+  forward_ids <- paste0("stais_", c(3, 4, 6, 7, 9, 12, 13, 14, 17, 18))
+
+  rev_rows <- out[out$item_id %in% reverse_ids, ]
+  fwd_rows <- out[out$item_id %in% forward_ids, ]
+
+  # All raw responses are 3; reversed should be 5 - 3 = 2
+  expect_true(all(rev_rows$response == "3"))
+  expect_true(all(rev_rows$response_scored == "2"))
+
+  # Forward items unchanged
+  expect_true(all(fwd_rows$response_scored == fwd_rows$response))
+})
+
+test_that("items_long scored_items = TRUE leaves non-reverse instruments unchanged", {
+  # Build an export with ESS answers (no reverse items defined)
+  ess_answers <- as.list(stats::setNames(rep(2L, 8L), paste0("ess", 1:8)))
+  obj <- structure(
+    list(
+      exported_at = NA, export_version = "1.0", n_participants = 1L,
+      participants = list(list(
+        meta    = list(participant_id = "p1", code = "P001", name = "Test",
+                       age = "30", sex = "female", bmi = "", group = "",
+                       site = "", session = "", diagnosis = "",
+                       medication = "", referral = "", notes = "",
+                       created_at = "2026-01-01T00:00:00.000Z"),
+        results = list(list(questionnaire_id = "ess",
+                            completed_at     = "2026-01-01T09:00:00.000Z",
+                            score = 16L, answers = ess_answers))
+      ))
+    ),
+    class = "tallier_export"
+  )
+  out <- items_long(obj, scored_items = TRUE)
+  expect_true("response_scored" %in% names(out))
+  # ESS has no reverse items: response_scored should equal response for all rows
+  expect_true(all(out$response_scored == out$response))
+})

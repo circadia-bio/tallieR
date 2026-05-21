@@ -190,6 +190,8 @@
   bai     = list(title = "Beck Anxiety Inventory",                                    score = .score_bai,     interpret = .interpret_bai,     domain = "Mental Health", max_score = 63,        beta = TRUE),
   dass21  = list(title = "Depression Anxiety Stress Scales - 21 items",               score = .score_dass21,  interpret = .interpret_dass21,  domain = "Mental Health", max_score = 42,        beta = TRUE),
   panss   = list(title = "Positive and Negative Syndrome Scale",                      score = .score_panss,   interpret = .interpret_panss,   domain = "Mental Health", max_score = 210,       beta = TRUE),
-  stai_s  = list(title = "State-Trait Anxiety Inventory - State subscale",            score = .score_stai_s,  interpret = .interpret_stai_s,  domain = "Mental Health", max_score = 80,        beta = TRUE),
-  stai_t  = list(title = "State-Trait Anxiety Inventory - Trait subscale",            score = .score_stai_t,  interpret = .interpret_stai_t,  domain = "Mental Health", max_score = 80,        beta = TRUE)
+  stai_s  = list(title = "State-Trait Anxiety Inventory - State subscale",            score = .score_stai_s,  interpret = .interpret_stai_s,  domain = "Mental Health", max_score = 80,        beta = TRUE,
+             reverse_items = list(item_ids = c("stais_1","stais_2","stais_5","stais_8","stais_10","stais_11","stais_15","stais_16","stais_19","stais_20"), max_val = 4L)),
+  stai_t  = list(title = "State-Trait Anxiety Inventory - Trait subscale",            score = .score_stai_t,  interpret = .interpret_stai_t,  domain = "Mental Health", max_score = 80,        beta = TRUE,
+             reverse_items = list(item_ids = c("stait_21","stait_26","stait_27","stait_30","stait_33","stait_34","stait_36","stait_39"), max_val = 4L))
 )

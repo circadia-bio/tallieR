@@ -329,7 +329,7 @@ test_that("score_questionnaire: AQ-10", {
 test_that("available_instruments returns expected columns and IDs", {
   inst <- available_instruments()
   expect_true(is.data.frame(inst))
-  expect_true(all(c("id", "title", "domain", "max_score", "beta") %in% names(inst)))
+  expect_true(all(c("id", "title", "domain", "max_score", "beta", "has_reverse") %in% names(inst)))
 
   # All original sleep instruments still present and non-beta
   sleep_ids <- c("ess", "isi", "dbas16", "meq", "psqi", "rusated", "stopbang", "kss", "mctq")
@@ -342,6 +342,11 @@ test_that("available_instruments returns expected columns and IDs", {
                "ipaq_short", "gpaq", "gsq", "aq10")
   expect_true(all(new_ids %in% inst$id))
   expect_true(all(inst$beta[inst$id %in% new_ids]))
+
+  # Only STAI-S and STAI-T have reverse items
+  expect_true(inst$has_reverse[inst$id == "stai_s"])
+  expect_true(inst$has_reverse[inst$id == "stai_t"])
+  expect_true(all(!inst$has_reverse[!inst$id %in% c("stai_s", "stai_t")]))
 })
 
 test_that("score_questionnaire emits warning for beta instruments", {

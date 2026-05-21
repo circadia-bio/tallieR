@@ -156,15 +156,47 @@ scores_long <- function(obj, include_meta = TRUE) {
 #' @param obj A `tallier_export` or `tallier_study` object.
 #' @param include_meta Logical. If `TRUE` (default), participant metadata
 #'   columns are included.
+#' @param scored_items Logical. If `TRUE`, adds a `response_scored` column
+#'   with reverse-scored values applied for instruments that define
+#'   `reverse_items` (currently STAI-S and STAI-T). For all other items and
+#'   instruments, `response_scored` equals `response`. Non-numeric responses
+#'   (e.g. clock-time lists, yes/no) are left as-is. Defaults to `FALSE` to
+#'   preserve existing behaviour.
+#' @param instruments An optional named list of additional registry entries
+#'   from [load_instrument()] or [load_instrument_dir()], used when
+#'   `scored_items = TRUE` to resolve reverse-scoring metadata for custom
+#'   instruments.
 #'
 #' @return A `data.frame` with columns: participant metadata (optional),
-#'   `questionnaire_id`, `completed_at`, `item_id`, `response`.
+#'   `questionnaire_id`, `completed_at`, `item_id`, `response`, and
+#'   optionally `response_scored`.
 #'
 #' @export
-items_long <- function(obj, include_meta = TRUE) {
+items_long <- function(obj, include_meta = TRUE, scored_items = FALSE,
+                       instruments = NULL) {
   items <- .items_to_df(obj)
   if (is.null(items) || nrow(items) == 0) {
     return(data.frame())
+  }
+
+  if (scored_items) {
+    registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+
+    items$response_scored <- mapply(
+      function(qid, item_id, response) {
+        inst    <- registry[[tolower(qid)]]
+        rev_def <- inst[["reverse_items"]]
+        if (is.null(rev_def) || !item_id %in% rev_def$item_ids) return(response)
+        raw <- suppressWarnings(as.numeric(response))
+        if (is.na(raw)) return(response)  # non-numeric (e.g. time, yes/no): leave as-is
+        as.character(rev_def$max_val + 1L - raw)
+      },
+      items$questionnaire_id,
+      items$item_id,
+      items$response,
+      SIMPLIFY = TRUE,
+      USE.NAMES = FALSE
+    )
   }
 
   if (include_meta) {

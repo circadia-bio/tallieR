@@ -49,11 +49,12 @@
 #' @export
 available_instruments <- function() {
   data.frame(
-    id        = names(.INSTRUMENTS),
-    title     = vapply(.INSTRUMENTS, `[[`, character(1), "title"),
-    domain    = vapply(.INSTRUMENTS, `[[`, character(1), "domain"),
-    max_score = vapply(.INSTRUMENTS, `[[`, numeric(1),   "max_score"),
-    beta      = vapply(.INSTRUMENTS, `[[`, logical(1),   "beta"),
+    id          = names(.INSTRUMENTS),
+    title       = vapply(.INSTRUMENTS, `[[`, character(1), "title"),
+    domain      = vapply(.INSTRUMENTS, `[[`, character(1), "domain"),
+    max_score   = vapply(.INSTRUMENTS, `[[`, numeric(1),   "max_score"),
+    beta        = vapply(.INSTRUMENTS, `[[`, logical(1),   "beta"),
+    has_reverse = vapply(.INSTRUMENTS, function(x) !is.null(x[["reverse_items"]]), logical(1)),
     stringsAsFactors = FALSE,
     row.names = NULL
   )
