@@ -12,14 +12,15 @@
 # score_all(), interpret_score().
 
 # --- Merged registry ----------------------------------------------------------
+#
+# .INSTRUMENTS is assembled in R/zzz.R, which is sourced last, after all
+# domain files (questionnaires_*.R) have been loaded. Referencing the
+# domain lists here at top level would fail if this file sorts before them
+# alphabetically (e.g. because custom_instruments.R forces a re-sort).
+# Functions below reference .INSTRUMENTS only inside their bodies, which
+# are not evaluated until called -- so load order doesn't matter there.
 
-.INSTRUMENTS <- c(
-  .SLEEP_INSTRUMENTS,
-  .MENTAL_HEALTH_INSTRUMENTS,
-  .WELLBEING_INSTRUMENTS,
-  .PHYSICAL_ACTIVITY_INSTRUMENTS,
-  .NEURODEVELOPMENTAL_INSTRUMENTS
-)
+.INSTRUMENTS <- list()   # populated by .onLoad() in zzz.R
 
 # --- Public API ---------------------------------------------------------------
 
