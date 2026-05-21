@@ -185,10 +185,13 @@ reference:
   - tallieR-package
 
 articles:
-- title: "Getting started"
+- title: "Guides"
   navbar: ~
   contents:
   - getting-started
+  - custom-instruments
+  - reliability-analysis
+  - longitudinal-data
 
 news:
   releases:
