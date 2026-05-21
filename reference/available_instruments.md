@@ -13,7 +13,11 @@ available_instruments()
 ## Value
 
 A `data.frame` with columns `id`, `title`, `domain`, `max_score`,
-`beta`.
+`beta`, `has_reverse`, and `returns_list`. The `max_score` column refers
+to the primary scalar score; instruments where `returns_list = TRUE`
+(PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) return a named list of
+subscale scores rather than a single number, and `max_score` reflects
+the global or total component only.
 
 ## Details
 
@@ -53,33 +57,33 @@ available_instruments()
 #> 24          gpaq                     Global Physical Activity Questionnaire
 #> 25           gsq                              Glasgow Sensory Questionnaire
 #> 26          aq10                Autism Spectrum Quotient - 10 item screener
-#>                domain max_score  beta has_reverse
-#> 1               Sleep        24 FALSE       FALSE
-#> 2               Sleep        28 FALSE       FALSE
-#> 3               Sleep        10 FALSE       FALSE
-#> 4               Sleep        86 FALSE       FALSE
-#> 5               Sleep        21 FALSE       FALSE
-#> 6               Sleep        24 FALSE       FALSE
-#> 7               Sleep         8 FALSE       FALSE
-#> 8               Sleep        10 FALSE       FALSE
-#> 9               Sleep        NA FALSE       FALSE
-#> 10      Mental Health         6  TRUE       FALSE
-#> 11      Mental Health        27  TRUE       FALSE
-#> 12      Mental Health        30  TRUE       FALSE
-#> 13      Mental Health        21  TRUE       FALSE
-#> 14      Mental Health         6  TRUE       FALSE
-#> 15      Mental Health        63  TRUE       FALSE
-#> 16      Mental Health        63  TRUE       FALSE
-#> 17      Mental Health        42  TRUE       FALSE
-#> 18      Mental Health       210  TRUE       FALSE
-#> 19      Mental Health        80  TRUE        TRUE
-#> 20      Mental Health        80  TRUE        TRUE
-#> 21          Wellbeing       100  TRUE       FALSE
-#> 22          Wellbeing        20  TRUE       FALSE
-#> 23  Physical Activity        NA  TRUE       FALSE
-#> 24  Physical Activity        NA  TRUE       FALSE
-#> 25 Neurodevelopmental       112  TRUE       FALSE
-#> 26 Neurodevelopmental        10  TRUE       FALSE
+#>                domain max_score  beta has_reverse returns_list
+#> 1               Sleep        24 FALSE       FALSE        FALSE
+#> 2               Sleep        28 FALSE       FALSE        FALSE
+#> 3               Sleep        10 FALSE       FALSE        FALSE
+#> 4               Sleep        86 FALSE       FALSE        FALSE
+#> 5               Sleep        21 FALSE       FALSE         TRUE
+#> 6               Sleep        24 FALSE       FALSE        FALSE
+#> 7               Sleep         8 FALSE       FALSE        FALSE
+#> 8               Sleep        10 FALSE       FALSE        FALSE
+#> 9               Sleep        NA FALSE       FALSE         TRUE
+#> 10      Mental Health         6  TRUE       FALSE        FALSE
+#> 11      Mental Health        27  TRUE       FALSE        FALSE
+#> 12      Mental Health        30  TRUE       FALSE        FALSE
+#> 13      Mental Health        21  TRUE       FALSE        FALSE
+#> 14      Mental Health         6  TRUE       FALSE        FALSE
+#> 15      Mental Health        63  TRUE       FALSE        FALSE
+#> 16      Mental Health        63  TRUE       FALSE        FALSE
+#> 17      Mental Health        42  TRUE       FALSE         TRUE
+#> 18      Mental Health       210  TRUE       FALSE         TRUE
+#> 19      Mental Health        80  TRUE        TRUE        FALSE
+#> 20      Mental Health        80  TRUE        TRUE        FALSE
+#> 21          Wellbeing       100  TRUE       FALSE         TRUE
+#> 22          Wellbeing        20  TRUE       FALSE        FALSE
+#> 23  Physical Activity        NA  TRUE       FALSE        FALSE
+#> 24  Physical Activity        NA  TRUE       FALSE        FALSE
+#> 25 Neurodevelopmental       112  TRUE       FALSE        FALSE
+#> 26 Neurodevelopmental        10  TRUE       FALSE        FALSE
 
 # View only stable instruments
 subset(available_instruments(), !beta)
@@ -93,16 +97,16 @@ subset(available_instruments(), !beta)
 #> 7 stopbang                                   STOP-BANG Questionnaire  Sleep
 #> 8      kss                               Karolinska Sleepiness Scale  Sleep
 #> 9     mctq                           Munich Chronotype Questionnaire  Sleep
-#>   max_score  beta has_reverse
-#> 1        24 FALSE       FALSE
-#> 2        28 FALSE       FALSE
-#> 3        10 FALSE       FALSE
-#> 4        86 FALSE       FALSE
-#> 5        21 FALSE       FALSE
-#> 6        24 FALSE       FALSE
-#> 7         8 FALSE       FALSE
-#> 8        10 FALSE       FALSE
-#> 9        NA FALSE       FALSE
+#>   max_score  beta has_reverse returns_list
+#> 1        24 FALSE       FALSE        FALSE
+#> 2        28 FALSE       FALSE        FALSE
+#> 3        10 FALSE       FALSE        FALSE
+#> 4        86 FALSE       FALSE        FALSE
+#> 5        21 FALSE       FALSE         TRUE
+#> 6        24 FALSE       FALSE        FALSE
+#> 7         8 FALSE       FALSE        FALSE
+#> 8        10 FALSE       FALSE        FALSE
+#> 9        NA FALSE       FALSE         TRUE
 
 # View only beta instruments
 subset(available_instruments(), beta)
@@ -124,22 +128,22 @@ subset(available_instruments(), beta)
 #> 24          gpaq                     Global Physical Activity Questionnaire
 #> 25           gsq                              Glasgow Sensory Questionnaire
 #> 26          aq10                Autism Spectrum Quotient - 10 item screener
-#>                domain max_score beta has_reverse
-#> 10      Mental Health         6 TRUE       FALSE
-#> 11      Mental Health        27 TRUE       FALSE
-#> 12      Mental Health        30 TRUE       FALSE
-#> 13      Mental Health        21 TRUE       FALSE
-#> 14      Mental Health         6 TRUE       FALSE
-#> 15      Mental Health        63 TRUE       FALSE
-#> 16      Mental Health        63 TRUE       FALSE
-#> 17      Mental Health        42 TRUE       FALSE
-#> 18      Mental Health       210 TRUE       FALSE
-#> 19      Mental Health        80 TRUE        TRUE
-#> 20      Mental Health        80 TRUE        TRUE
-#> 21          Wellbeing       100 TRUE       FALSE
-#> 22          Wellbeing        20 TRUE       FALSE
-#> 23  Physical Activity        NA TRUE       FALSE
-#> 24  Physical Activity        NA TRUE       FALSE
-#> 25 Neurodevelopmental       112 TRUE       FALSE
-#> 26 Neurodevelopmental        10 TRUE       FALSE
+#>                domain max_score beta has_reverse returns_list
+#> 10      Mental Health         6 TRUE       FALSE        FALSE
+#> 11      Mental Health        27 TRUE       FALSE        FALSE
+#> 12      Mental Health        30 TRUE       FALSE        FALSE
+#> 13      Mental Health        21 TRUE       FALSE        FALSE
+#> 14      Mental Health         6 TRUE       FALSE        FALSE
+#> 15      Mental Health        63 TRUE       FALSE        FALSE
+#> 16      Mental Health        63 TRUE       FALSE        FALSE
+#> 17      Mental Health        42 TRUE       FALSE         TRUE
+#> 18      Mental Health       210 TRUE       FALSE         TRUE
+#> 19      Mental Health        80 TRUE        TRUE        FALSE
+#> 20      Mental Health        80 TRUE        TRUE        FALSE
+#> 21          Wellbeing       100 TRUE       FALSE         TRUE
+#> 22          Wellbeing        20 TRUE       FALSE        FALSE
+#> 23  Physical Activity        NA TRUE       FALSE        FALSE
+#> 24  Physical Activity        NA TRUE       FALSE        FALSE
+#> 25 Neurodevelopmental       112 TRUE       FALSE        FALSE
+#> 26 Neurodevelopmental        10 TRUE       FALSE        FALSE
 ```

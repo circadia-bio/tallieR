@@ -37,6 +37,15 @@ algorithms) the returned entry will score as `NA` and a warning is
 emitted each time scoring is attempted. You can override the compiled
 `score` function by assigning a custom one after loading (see examples).
 
+**Reverse-scored items:** If the JSON spec's `scoringMethod` includes a
+`reverseItems` array (list of objects with an `id` field) and a
+`reverseMaxVal` (or `maxVal`) integer, the compiled entry will include a
+`reverse_items` list in the same format as built-in instruments. This
+allows
+[`items_long()`](https://tallier.circadia-lab.uk/reference/items_long.md)
+with `scored_items = TRUE` to correctly apply reverse scoring for custom
+questionnaires.
+
 ## See also
 
 [`load_instrument_dir()`](https://tallier.circadia-lab.uk/reference/load_instrument_dir.md),

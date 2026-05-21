@@ -133,7 +133,11 @@ beta status.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code> with columns <code>id</code>, <code>title</code>, <code>domain</code>, <code>max_score</code>,
-<code>beta</code>.</p>
+<code>beta</code>, <code>has_reverse</code>, and <code>returns_list</code>. The <code>max_score</code> column refers
+to the primary scalar score; instruments where <code>returns_list = TRUE</code>
+(PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) return a named list of
+subscale scores rather than a single number, and <code>max_score</code> reflects
+the global or total component only.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -172,33 +176,33 @@ the ScoreMe app exactly; use with appropriate caution in clinical contexts.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 24          gpaq                     Global Physical Activity Questionnaire</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 25           gsq                              Glasgow Sensory Questionnaire</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 26          aq10                Autism Spectrum Quotient - 10 item screener</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                domain max_score  beta has_reverse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1               Sleep        24 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2               Sleep        28 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3               Sleep        10 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4               Sleep        86 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5               Sleep        21 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6               Sleep        24 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7               Sleep         8 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8               Sleep        10 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9               Sleep        NA FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10      Mental Health         6  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11      Mental Health        27  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12      Mental Health        30  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13      Mental Health        21  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14      Mental Health         6  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15      Mental Health        63  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16      Mental Health        63  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17      Mental Health        42  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18      Mental Health       210  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19      Mental Health        80  TRUE        TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20      Mental Health        80  TRUE        TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21          Wellbeing       100  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22          Wellbeing        20  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23  Physical Activity        NA  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Physical Activity        NA  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25 Neurodevelopmental       112  TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26 Neurodevelopmental        10  TRUE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                domain max_score  beta has_reverse returns_list</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               Sleep        24 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2               Sleep        28 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3               Sleep        10 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4               Sleep        86 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5               Sleep        21 FALSE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6               Sleep        24 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7               Sleep         8 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8               Sleep        10 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9               Sleep        NA FALSE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      Mental Health         6  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11      Mental Health        27  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12      Mental Health        30  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13      Mental Health        21  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14      Mental Health         6  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15      Mental Health        63  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16      Mental Health        63  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17      Mental Health        42  TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18      Mental Health       210  TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19      Mental Health        80  TRUE        TRUE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20      Mental Health        80  TRUE        TRUE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21          Wellbeing       100  TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22          Wellbeing        20  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23  Physical Activity        NA  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Physical Activity        NA  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25 Neurodevelopmental       112  TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26 Neurodevelopmental        10  TRUE       FALSE        FALSE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View only stable instruments</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">available_instruments</span><span class="op">(</span><span class="op">)</span>, <span class="op">!</span><span class="va">beta</span><span class="op">)</span></span></span>
@@ -212,16 +216,16 @@ the ScoreMe app exactly; use with appropriate caution in clinical contexts.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 7 stopbang                                   STOP-BANG Questionnaire  Sleep</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 8      kss                               Karolinska Sleepiness Scale  Sleep</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 9     mctq                           Munich Chronotype Questionnaire  Sleep</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   max_score  beta has_reverse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1        24 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2        28 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3        10 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        86 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5        21 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6        24 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7         8 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8        10 FALSE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9        NA FALSE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   max_score  beta has_reverse returns_list</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        24 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        28 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        10 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4        86 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5        21 FALSE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6        24 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7         8 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8        10 FALSE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9        NA FALSE       FALSE         TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View only beta instruments</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fu">available_instruments</span><span class="op">(</span><span class="op">)</span>, <span class="va">beta</span><span class="op">)</span></span></span>
@@ -243,24 +247,24 @@ the ScoreMe app exactly; use with appropriate caution in clinical contexts.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 24          gpaq                     Global Physical Activity Questionnaire</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 25           gsq                              Glasgow Sensory Questionnaire</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 26          aq10                Autism Spectrum Quotient - 10 item screener</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                domain max_score beta has_reverse</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10      Mental Health         6 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11      Mental Health        27 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12      Mental Health        30 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13      Mental Health        21 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14      Mental Health         6 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15      Mental Health        63 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16      Mental Health        63 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17      Mental Health        42 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18      Mental Health       210 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19      Mental Health        80 TRUE        TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20      Mental Health        80 TRUE        TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21          Wellbeing       100 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22          Wellbeing        20 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23  Physical Activity        NA TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Physical Activity        NA TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25 Neurodevelopmental       112 TRUE       FALSE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 26 Neurodevelopmental        10 TRUE       FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                domain max_score beta has_reverse returns_list</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10      Mental Health         6 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11      Mental Health        27 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12      Mental Health        30 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13      Mental Health        21 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14      Mental Health         6 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15      Mental Health        63 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16      Mental Health        63 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17      Mental Health        42 TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18      Mental Health       210 TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19      Mental Health        80 TRUE        TRUE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20      Mental Health        80 TRUE        TRUE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21          Wellbeing       100 TRUE       FALSE         TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22          Wellbeing        20 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23  Physical Activity        NA TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24  Physical Activity        NA TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25 Neurodevelopmental       112 TRUE       FALSE        FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26 Neurodevelopmental        10 TRUE       FALSE        FALSE</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

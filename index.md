@@ -81,7 +81,8 @@ the two R packages bring both data streams together in R.
 - 📋
   **[`available_instruments()`](https://tallier.circadia-lab.uk/reference/available_instruments.md)**
   — list all supported questionnaires with IDs, domains, beta status,
-  and reverse-scoring flags
+  reverse-scoring flags, and a `returns_list` indicator for composite
+  instruments
 - 📁
   **[`load_instrument()`](https://tallier.circadia-lab.uk/reference/load_instrument.md)**
   — compile a custom questionnaire from a ScoreMe JSON spec
@@ -126,7 +127,7 @@ the two R packages bring both data streams together in R.
     │   ├── questionnaires_neurodevelopmental.R # GSQ, AQ-10
     │   ├── custom_instruments.R           # load_instrument(), load_instrument_dir()
     │   ├── reliability.R                  # cronbach_alpha(), omega_reliability()
-    │   └── zzz.R                          # .onLoad() — assembles .INSTRUMENTS registry
+    │   └── zzz.R                          # `%||%` operator; .onLoad() assembles .INSTRUMENTS registry
     ├── inst/extdata/
     │   ├── example_export.json            # bundled 2-participant simulated export
     │   └── example_instrument.json       # example custom instrument spec
@@ -171,6 +172,7 @@ library(tallieR)
 exp <- read_scoreme("my_study_export.json")
 exp
 #> ℹ tallier_export: 12 participants | exported 2026-05-14T10:00:00.000Z
+#>    Instruments (4): ess, isi, meq, psqi
 
 # ── Wide table: one row per participant ──────────────────────────────────────
 wide <- scores_wide(exp)

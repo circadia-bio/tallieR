@@ -173,7 +173,8 @@ analysis.</p>
 <span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_export.json"</span>, package <span class="op">=</span> <span class="st">"tallieR"</span><span class="op">)</span></span>
 <span><span class="va">exp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
 <span><span class="va">exp</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> tallier_export: 2 participants | exported 2026-05-14T10:00:00.000Z</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> tallier_export: 2 participants | exported 2026-05-14T10:00:00.000Z</span></span>
+<span><span class="co">#&gt;   Instruments (4): ess, isi, meq, stopbang</span></span></code></pre></div>
 <p>Or read a whole folder of exports at once:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">study</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_scoreme_dir.html">read_scoreme_dir</a></span><span class="op">(</span><span class="st">"~/Downloads/my_study_exports/"</span><span class="op">)</span></span></code></pre></div>
@@ -312,36 +313,41 @@ score:</p>
 <span><span class="co">#&gt; 24          gpaq                     Global Physical Activity Questionnaire</span></span>
 <span><span class="co">#&gt; 25           gsq                              Glasgow Sensory Questionnaire</span></span>
 <span><span class="co">#&gt; 26          aq10                Autism Spectrum Quotient - 10 item screener</span></span>
-<span><span class="co">#&gt;                domain max_score  beta has_reverse</span></span>
-<span><span class="co">#&gt; 1               Sleep        24 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 2               Sleep        28 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 3               Sleep        10 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 4               Sleep        86 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 5               Sleep        21 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 6               Sleep        24 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 7               Sleep         8 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 8               Sleep        10 FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 9               Sleep        NA FALSE       FALSE</span></span>
-<span><span class="co">#&gt; 10      Mental Health         6  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 11      Mental Health        27  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 12      Mental Health        30  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 13      Mental Health        21  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 14      Mental Health         6  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 15      Mental Health        63  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 16      Mental Health        63  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 17      Mental Health        42  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 18      Mental Health       210  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 19      Mental Health        80  TRUE        TRUE</span></span>
-<span><span class="co">#&gt; 20      Mental Health        80  TRUE        TRUE</span></span>
-<span><span class="co">#&gt; 21          Wellbeing       100  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 22          Wellbeing        20  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 23  Physical Activity        NA  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 24  Physical Activity        NA  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 25 Neurodevelopmental       112  TRUE       FALSE</span></span>
-<span><span class="co">#&gt; 26 Neurodevelopmental        10  TRUE       FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;                domain max_score  beta has_reverse returns_list</span></span>
+<span><span class="co">#&gt; 1               Sleep        24 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 2               Sleep        28 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 3               Sleep        10 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 4               Sleep        86 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 5               Sleep        21 FALSE       FALSE         TRUE</span></span>
+<span><span class="co">#&gt; 6               Sleep        24 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 7               Sleep         8 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 8               Sleep        10 FALSE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 9               Sleep        NA FALSE       FALSE         TRUE</span></span>
+<span><span class="co">#&gt; 10      Mental Health         6  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 11      Mental Health        27  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 12      Mental Health        30  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 13      Mental Health        21  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 14      Mental Health         6  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 15      Mental Health        63  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 16      Mental Health        63  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 17      Mental Health        42  TRUE       FALSE         TRUE</span></span>
+<span><span class="co">#&gt; 18      Mental Health       210  TRUE       FALSE         TRUE</span></span>
+<span><span class="co">#&gt; 19      Mental Health        80  TRUE        TRUE        FALSE</span></span>
+<span><span class="co">#&gt; 20      Mental Health        80  TRUE        TRUE        FALSE</span></span>
+<span><span class="co">#&gt; 21          Wellbeing       100  TRUE       FALSE         TRUE</span></span>
+<span><span class="co">#&gt; 22          Wellbeing        20  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 23  Physical Activity        NA  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 24  Physical Activity        NA  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 25 Neurodevelopmental       112  TRUE       FALSE        FALSE</span></span>
+<span><span class="co">#&gt; 26 Neurodevelopmental        10  TRUE       FALSE        FALSE</span></span></code></pre></div>
 <p>The <code>has_reverse</code> column flags instruments with item-level
-reverse scoring. Pass <code>scored_items = TRUE</code> to
-<code><a href="../reference/items_long.html">items_long()</a></code> to apply reversals automatically.</p>
+reverse scoring (currently STAI-S and STAI-T). Pass
+<code>scored_items = TRUE</code> to <code><a href="../reference/items_long.html">items_long()</a></code> to apply
+reversals automatically. The <code>returns_list</code> column flags
+composite instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) whose
+<code><a href="../reference/score_questionnaire.html">score_questionnaire()</a></code> result is a named list of subscale
+scores rather than a single number — in <code><a href="../reference/scores_wide.html">scores_wide()</a></code> these
+appear as their primary summary scalar.</p>
 </div>
 <div class="section level2">
 <h2 id="study-monitoring">Study monitoring<a class="anchor" aria-label="anchor" href="#study-monitoring"></a>

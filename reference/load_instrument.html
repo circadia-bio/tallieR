@@ -157,6 +157,12 @@ instruments with <code>"composite"</code> scoring (e.g. PSQI-style multi-compone
 algorithms) the returned entry will score as <code>NA</code> and a warning is emitted
 each time scoring is attempted. You can override the compiled <code>score</code>
 function by assigning a custom one after loading (see examples).</p>
+<p><strong>Reverse-scored items:</strong> If the JSON spec's <code>scoringMethod</code> includes a
+<code>reverseItems</code> array (list of objects with an <code>id</code> field) and a
+<code>reverseMaxVal</code> (or <code>maxVal</code>) integer, the compiled entry will include a
+<code>reverse_items</code> list in the same format as built-in instruments. This
+allows <code><a href="items_long.html">items_long()</a></code> with <code>scored_items = TRUE</code> to correctly apply
+reverse scoring for custom questionnaires.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

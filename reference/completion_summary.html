@@ -159,10 +159,12 @@ columns are prepended.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>In long format: a <code>data.frame</code> with columns: participant metadata
-(optional), <code>questionnaire_id</code>, <code>completed</code> (logical), and optionally
-<code>completed_at</code> (character timestamp of most recent administration).
+(optional), <code>questionnaire_id</code>, <code>completed</code> (logical, <code>FALSE</code> — not
+<code>NA</code> — for questionnaires the participant never started), and optionally
+<code>completed_at</code> (character timestamp of most recent administration;
+<code>NA</code> when <code>completed = FALSE</code>).
 In wide format: a <code>data.frame</code> with one row per participant and one
-logical column per questionnaire.</p>
+logical column per questionnaire (<code>FALSE</code> indicates not completed).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

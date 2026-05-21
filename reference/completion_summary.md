@@ -37,10 +37,12 @@ completion_summary(obj, wide = FALSE, include_date = TRUE, include_meta = TRUE)
 ## Value
 
 In long format: a `data.frame` with columns: participant metadata
-(optional), `questionnaire_id`, `completed` (logical), and optionally
-`completed_at` (character timestamp of most recent administration). In
-wide format: a `data.frame` with one row per participant and one logical
-column per questionnaire.
+(optional), `questionnaire_id`, `completed` (logical, `FALSE` — not `NA`
+— for questionnaires the participant never started), and optionally
+`completed_at` (character timestamp of most recent administration; `NA`
+when `completed = FALSE`). In wide format: a `data.frame` with one row
+per participant and one logical column per questionnaire (`FALSE`
+indicates not completed).
 
 ## Details
 
