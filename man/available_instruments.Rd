@@ -7,13 +7,26 @@
 available_instruments()
 }
 \value{
-A \code{data.frame} with columns \code{id}, \code{title}, \code{domain}, \code{max_score}.
+A \code{data.frame} with columns \code{id}, \code{title}, \code{domain}, \code{max_score},
+\code{beta}.
 }
 \description{
 Returns a data frame listing all built-in questionnaires supported by
-tallieR, with their IDs, full titles, clinical domain, and maximum score.
+tallieR, with their IDs, full titles, clinical domain, maximum score, and
+beta status.
+}
+\details{
+Beta instruments (\code{beta = TRUE}) are included in ScoreMe but have not yet
+been through full validation review in tallieR. Scoring algorithms match
+the ScoreMe app exactly; use with appropriate caution in clinical contexts.
 }
 \examples{
 available_instruments()
+
+# View only stable instruments
+subset(available_instruments(), !beta)
+
+# View only beta instruments
+subset(available_instruments(), beta)
 
 }

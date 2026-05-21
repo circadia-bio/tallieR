@@ -34,8 +34,8 @@ items  <- items_long(study)
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/circadia-bio/tallieR}
   \item \url{https://tallier.circadia-lab.uk}
+  \item \url{https://github.com/circadia-bio/tallieR}
   \item Report bugs at \url{https://github.com/circadia-bio/tallieR/issues}
 }
 
