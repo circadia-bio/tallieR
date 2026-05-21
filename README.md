@@ -31,13 +31,18 @@ tallieR is designed to work alongside [slumbR](https://github.com/circadia-bio/s
 - 📂 **`read_scoreme_dir()`** — batch-read a whole directory of exports into a `tallier_study`
 - 📊 **`scores_wide()`** — one row per participant, one column per questionnaire (most recent session)
 - 📋 **`scores_long()`** — one row per participant × questionnaire × administration (full history retained)
-- 🔬 **`items_long()`** — one row per item response, for factor analysis, IRT, or reliability checks
+- 🔬 **`items_long()`** — one row per item response; optional `scored_items = TRUE` applies reverse-scoring
+- ✅ **`completion_summary()`** — participant × questionnaire completion matrix (long or wide format)
 - 🧮 **`score_questionnaire()`** — re-score any built-in instrument from a raw answers list
 - 💬 **`interpret_score()`** — return the clinical score band (label, colour, description) for any score
-- 📋 **`available_instruments()`** — list all supported questionnaires with IDs, domains, and beta status
+- 💬 **`interpret_all()`** — return clinical interpretations for all results in a study as a long data frame
+- 📋 **`available_instruments()`** — list all supported questionnaires with IDs, domains, beta status, and reverse-scoring flags
 - 📁 **`load_instrument()`** — compile a custom questionnaire from a ScoreMe JSON spec
 - 📁 **`load_instrument_dir()`** — batch-load a directory of custom instrument specs
 - 📐 **`cronbach_alpha()`** — compute Cronbach's α with exact 95% CIs for any questionnaire in the data
+- 📐 **`omega_reliability()`** — compute McDonald's ω (total omega) via single-factor EFA
+- 🗂️ **`summary()`** — print participant count, instruments, completion rates, and date range for any study object
+- 📊 **`tibble::as_tibble()`** — coerce any study object directly to a tibble via `scores_wide()`
 
 ---
 
@@ -47,10 +52,13 @@ tallieR is designed to work alongside [slumbR](https://github.com/circadia-bio/s
 tallieR/
 ├── R/
 │   ├── tallieR-package.R              # package-level docs and workflow overview
-│   ├── import.R                       # read_scoreme(), read_scoreme_dir()
-│   ├── tidy.R                         # scores_wide(), scores_long(), items_long()
+│   ├── import.R                       # read_scoreme(), read_scoreme_dir(),
+│   │                                  # print/summary S3 methods
+│   ├── tidy.R                         # scores_wide(), scores_long(), items_long(),
+│   │                                  # completion_summary(), as_tibble methods
 │   ├── questionnaires.R               # score_questionnaire(), interpret_score(),
-│   │                                  # available_instruments(), score_all()
+│   │                                  # interpret_all(), available_instruments(),
+│   │                                  # score_all()
 │   ├── questionnaires_sleep.R         # ESS, ISI, DBAS-16, MEQ, PSQI, RU-SATED,
 │   │                                  # STOP-BANG, KSS, MCTQ
 │   ├── questionnaires_mental_health.R # PHQ-2/9/15, GAD-7/2, BDI-II, BAI,
@@ -59,7 +67,7 @@ tallieR/
 │   ├── questionnaires_physical_activity.R  # IPAQ-S, GPAQ
 │   ├── questionnaires_neurodevelopmental.R # GSQ, AQ-10
 │   ├── custom_instruments.R           # load_instrument(), load_instrument_dir()
-│   ├── reliability.R                  # cronbach_alpha()
+│   ├── reliability.R                  # cronbach_alpha(), omega_reliability()
 │   └── zzz.R                          # .onLoad() — assembles .INSTRUMENTS registry
 ├── inst/extdata/
 │   ├── example_export.json            # bundled 2-participant simulated export
@@ -70,7 +78,8 @@ tallieR/
 │   └── custom-instruments.Rmd         # loading and scoring custom questionnaires
 ├── tests/testthat/
 │   ├── test-questionnaires.R
-│   └── test-import.R
+│   ├── test-import.R
+│   └── test-reliability.R
 ├── logo.png
 ├── DESCRIPTION
 ├── LICENSE
@@ -167,7 +176,7 @@ See `vignette("getting-started", package = "tallieR")` for a full worked example
 
 > **Note on PSQI:** `score_questionnaire("psqi", answers)` returns a named list with `global` and seven component scores (`C1`–`C7`). Use `result$global` for the total.
 
-> **Note on MCTQ:** `score_questionnaire("mctq", answers)` returns a named list: `msfsc` (corrected mid-sleep on free days, decimal hours), `sjl` (social jetlag, hours), plus `msw`, `msf`, `sd_w`, `sd_f`. Expected answer keys: `bt_w`, `sl_w`, `wt_w`, `bt_f`, `sl_f`, `wt_f` (times as `{hour, minute}` lists or decimal hours; latencies as numeric minutes), and `wd` (workdays per week).
+> **Note on MCTQ:** `score_questionnaire("mctq", answers)` returns a named list: `msfsc` (corrected mid-sleep on free days, decimal hours), `sjl` (absolute social jetlag, hours), `sjl_rel` (signed social jetlag, hours), `msw`, `msf`, `sd_w`, `sd_f`, `sd_week` (weighted average sleep duration), `alarm_w`, `alarm_f` (logical alarm flags, `NA` if not captured). Expected answer keys: `bt_w`, `sl_w`, `wt_w`, `bt_f`, `sl_f`, `wt_f` (times as `{hour, minute}` lists or decimal hours; latencies as numeric minutes), `wd` (workdays per week), and optionally `alarm_w`/`alarm_f` (`"yes"`/`"no"`).
 
 ### 🧠 Mental Health *(beta)*
 
@@ -250,28 +259,84 @@ See `vignette("custom-instruments", package = "tallieR")` and
 
 ## 📐 Reliability Analysis
 
-`cronbach_alpha()` computes Cronbach's α with exact 95% confidence intervals (Feldt et al., 1987) for any questionnaire present in the data.
+`cronbach_alpha()` computes Cronbach's α with exact 95% confidence intervals (Feldt et al., 1987). `omega_reliability()` computes McDonald's ω_t (total omega) via single-factor EFA — generally preferred for non-tau-equivalent items. Both functions share the same interface and output shape, making them easy to compare side by side.
 
 ```r
 study <- read_scoreme_dir("exports/")
 
-# All questionnaires
+# Cronbach's alpha with exact CIs
 cronbach_alpha(study)
 #>  questionnaire_id alpha ci_lower ci_upper n_items n_obs note
 #>               ess  0.87     0.82     0.91       8    48   NA
 #>               isi  0.91     0.87     0.94       7    48   NA
-#>               phq9 0.85     0.80     0.90       9    42   NA
 #>  ...
 
-# Specific subset
-cronbach_alpha(study, questionnaires = c("ess", "isi", "phq9"))
+# McDonald's omega
+omega_reliability(study)
 
-# From an items_long() data frame (e.g. after filtering)
+# Compare both side by side
+alpha <- cronbach_alpha(study, questionnaires = c("ess", "isi"))
+omega <- omega_reliability(study, questionnaires = c("ess", "isi"))
+merge(alpha[, c("questionnaire_id", "alpha", "n_obs")],
+      omega[, c("questionnaire_id", "omega")],
+      by = "questionnaire_id")
+
+# Both accept an items_long() data frame directly
 items <- items_long(study)
 cronbach_alpha(items)
 ```
 
-Non-numeric items (MCTQ clock times, STOP-BANG yes/no) are silently dropped before estimation. The function accepts either a `tallier_export`/`tallier_study` object or a data frame returned by `items_long()`.
+Non-numeric items (MCTQ clock times, STOP-BANG yes/no) are silently dropped before estimation.
+
+---
+
+## 📊 Study Monitoring
+
+`summary()` gives a quick overview of any study object. `completion_summary()` returns a tidy data frame of completion status per participant and questionnaire — useful for longitudinal data monitoring.
+
+```r
+# Quick console overview
+summary(study)
+#> ── tallier_study ───────────────────────────────────────
+#> • Participants: 48
+#> • Source files: 3
+#> • Instruments:  9
+#> ── Completion ─────────────────────────────────────────
+#>  ess: 48/48 (100%)
+#>  isi: 45/48 (93.8%)
+#>  ...
+
+# Programmatic access
+s <- summary(study)
+s$completion
+
+# Tidy completion matrix (long format)
+completion_summary(study)
+
+# Wide format: one row per participant, one column per questionnaire
+completion_summary(study, wide = TRUE)
+```
+
+---
+
+## 💬 Clinical Interpretations
+
+`interpret_all()` returns a long data frame of clinical interpretations for every result in a study, joinable with `scores_long()` on `participant_id` + `questionnaire_id` + `completed_at`.
+
+```r
+interps <- interpret_all(study)
+head(interps[, c("code", "questionnaire_id", "score", "label", "description")])
+
+# Join with scores for a complete picture
+scores  <- scores_long(study)
+full    <- merge(
+  scores,
+  interps[, c("participant_id", "questionnaire_id", "completed_at",
+               "label", "color", "description")],
+  by = c("participant_id", "questionnaire_id", "completed_at"),
+  all.x = TRUE
+)
+```
 
 ---
 
