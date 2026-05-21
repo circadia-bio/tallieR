@@ -142,7 +142,7 @@
 <img src="logo.svg" class="logo" alt=""><h1 id="abacus-tallier-">🧮 tallieR <a class="anchor" aria-label="anchor" href="#abacus-tallier-"></a>
 </h1>
 </div>
-<p><strong>Import and score ScoreMe app questionnaire data in R.</strong></p>
+<p><strong>Import, score, and analyse ScoreMe questionnaire data in R.</strong></p>
 <p><a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/tallieR" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/tallieR/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://tallier.circadia-lab.uk"><img src="https://img.shields.io/badge/docs-tallier.circadia--lab.uk-4A7BB5" alt="pkgdown"></a></p>
 <hr>
 <blockquote>
@@ -153,7 +153,8 @@
 <h2 id="open_book-what-is-tallier">📖 What is tallieR?<a class="anchor" aria-label="anchor" href="#open_book-what-is-tallier"></a>
 </h2>
 <p>tallieR is the official R companion to the <a href="https://scoreme.circadia-lab.uk" class="external-link">ScoreMe app</a>. When a study session ends, ScoreMe exports all participant data as a single JSON file. tallieR reads that file — or a whole directory of exports — re-scores every questionnaire from raw item-level responses using the same algorithms embedded in the app, and hands you tidy data frames ready for downstream analysis.</p>
-<p>It is designed to work alongside <a href="https://github.com/circadia-bio/slumbR" class="external-link">slumbR</a>: ScoreMe handles the questionnaire side of a study, Sleep Diaries handles the diary side, and the two R packages bring both streams together in R.</p>
+<p>It covers <strong>27 validated instruments</strong> across five clinical domains: sleep, mental health, wellbeing, physical activity, and neurodevelopmental screening. Custom instruments defined in ScoreMe-compatible JSON files can be loaded and scored with the same API, without modifying the package.</p>
+<p>tallieR is designed to work alongside <a href="https://github.com/circadia-bio/slumbR" class="external-link">slumbR</a>: ScoreMe handles the questionnaire side of a study, Sleep Diaries handles the diary side, and the two R packages bring both data streams together in R.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -168,7 +169,10 @@
 <li>🔬 <strong><code><a href="reference/items_long.html">items_long()</a></code></strong> — one row per item response, for factor analysis, IRT, or reliability checks</li>
 <li>🧮 <strong><code><a href="reference/score_questionnaire.html">score_questionnaire()</a></code></strong> — re-score any built-in instrument from a raw answers list</li>
 <li>💬 <strong><code><a href="reference/interpret_score.html">interpret_score()</a></code></strong> — return the clinical score band (label, colour, description) for any score</li>
-<li>📋 <strong><code><a href="reference/available_instruments.html">available_instruments()</a></code></strong> — list all supported questionnaires with IDs and score ranges</li>
+<li>📋 <strong><code><a href="reference/available_instruments.html">available_instruments()</a></code></strong> — list all supported questionnaires with IDs, domains, and beta status</li>
+<li>📁 <strong><code><a href="reference/load_instrument.html">load_instrument()</a></code></strong> — compile a custom questionnaire from a ScoreMe JSON spec</li>
+<li>📁 <strong><code><a href="reference/load_instrument_dir.html">load_instrument_dir()</a></code></strong> — batch-load a directory of custom instrument specs</li>
+<li>📐 <strong><code><a href="reference/cronbach_alpha.html">cronbach_alpha()</a></code></strong> — compute Cronbach’s α with exact 95% CIs for any questionnaire in the data</li>
 </ul>
 <hr>
 </div>
@@ -177,18 +181,32 @@
 </h2>
 <pre><code>tallieR/
 ├── R/
-│   ├── tallieR-package.R     # package-level docs and workflow overview
-│   ├── import.R              # read_scoreme(), read_scoreme_dir()
-│   ├── tidy.R                # scores_wide(), scores_long(), items_long()
-│   └── questionnaires.R      # score_questionnaire(), interpret_score(), available_instruments()
+│   ├── tallieR-package.R              # package-level docs and workflow overview
+│   ├── import.R                       # read_scoreme(), read_scoreme_dir()
+│   ├── tidy.R                         # scores_wide(), scores_long(), items_long()
+│   ├── questionnaires.R               # score_questionnaire(), interpret_score(),
+│   │                                  # available_instruments(), score_all()
+│   ├── questionnaires_sleep.R         # ESS, ISI, DBAS-16, MEQ, PSQI, RU-SATED,
+│   │                                  # STOP-BANG, KSS, MCTQ
+│   ├── questionnaires_mental_health.R # PHQ-2/9/15, GAD-7/2, BDI-II, BAI,
+│   │                                  # DASS-21, PANSS, STAI-S/T
+│   ├── questionnaires_wellbeing.R     # WHOQOL-BREF, MacArthur SSS
+│   ├── questionnaires_physical_activity.R  # IPAQ-S, GPAQ
+│   ├── questionnaires_neurodevelopmental.R # GSQ, AQ-10
+│   ├── custom_instruments.R           # load_instrument(), load_instrument_dir()
+│   ├── reliability.R                  # cronbach_alpha()
+│   └── zzz.R                          # .onLoad() — assembles .INSTRUMENTS registry
 ├── inst/extdata/
-│   └── example_export.json   # bundled 2-participant simulated export
-├── man/                      # roxygen2-generated documentation
+│   ├── example_export.json            # bundled 2-participant simulated export
+│   └── example_instrument.json       # example custom instrument spec
+├── man/                               # roxygen2-generated documentation
 ├── vignettes/
-│   └── getting-started.Rmd  # end-to-end worked example
+│   ├── getting-started.Rmd            # end-to-end worked example
+│   └── custom-instruments.Rmd         # loading and scoring custom questionnaires
 ├── tests/testthat/
 │   ├── test-questionnaires.R
 │   └── test-import.R
+├── logo.png
 ├── DESCRIPTION
 ├── LICENSE
 └── tallieR.Rproj</code></pre>
@@ -226,10 +244,10 @@
 <span></span>
 <span><span class="co"># ── Wide table: one row per participant ──────────────────────────────────────</span></span>
 <span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_wide.html">scores_wide</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
-<span><span class="va">wide</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"code"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"ess"</span>, <span class="st">"isi"</span>, <span class="st">"meq"</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co">#&gt;   code age    sex ess isi meq</span></span>
-<span><span class="co">#&gt; 1 P001  28 female  10   5  59</span></span>
-<span><span class="co">#&gt; 2 P002  45   male  20  22  NA</span></span>
+<span><span class="va">wide</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"code"</span>, <span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"ess"</span>, <span class="st">"isi"</span>, <span class="st">"meq"</span>, <span class="st">"phq9"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt;   code age    sex ess isi meq phq9</span></span>
+<span><span class="co">#&gt; 1 P001  28 female  10   5  59    3</span></span>
+<span><span class="co">#&gt; 2 P002  45   male  20  22  NA   14</span></span>
 <span></span>
 <span><span class="co"># ── Long table: full administration history ──────────────────────────────────</span></span>
 <span><span class="va">long</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_long.html">scores_long</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
@@ -261,16 +279,19 @@
 <p>[!NOTE] The bundled dataset is entirely <strong>simulated</strong>. The two participants (Alice Example, Bob Example) and all their questionnaire responses are artificially generated for demonstration purposes. They do not represent real people or real study data.</p>
 </blockquote>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">path</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_export.json"</span>, package <span class="op">=</span> <span class="st">"tallieR"</span><span class="op">)</span></span>
-<span><span class="va">exp</span>   <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
-<span><span class="va">wide</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_wide.html">scores_wide</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_export.json"</span>, package <span class="op">=</span> <span class="st">"tallieR"</span><span class="op">)</span></span>
+<span><span class="va">exp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
+<span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_wide.html">scores_wide</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
 <p>See <code><a href="articles/getting-started.html">vignette("getting-started", package = "tallieR")</a></code> for a full worked example.</p>
 <hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="abacus-supported-questionnaires">🧮 Supported questionnaires<a class="anchor" aria-label="anchor" href="#abacus-supported-questionnaires"></a>
+<h2 id="abacus-supported-instruments">🧮 Supported instruments<a class="anchor" aria-label="anchor" href="#abacus-supported-instruments"></a>
 </h2>
+<div class="section level3">
+<h3 id="sleeping-sleep">😴 Sleep<a class="anchor" aria-label="anchor" href="#sleeping-sleep"></a>
+</h3>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -342,14 +363,228 @@
 </tbody>
 </table>
 <blockquote>
-<p><strong>Note on MCTQ:</strong> <code>score_questionnaire("mctq", answers)</code> returns a named list: <code>msfsc</code> (chronotype midpoint, decimal hours), <code>sjl</code> (social jetlag, hours), plus <code>msw</code>, <code>msf</code>, <code>sd_w</code>, <code>sd_f</code>. Expected answer keys: <code>bt_w</code>, <code>sl_w</code>, <code>wt_w</code>, <code>bt_f</code>, <code>sl_f</code>, <code>wt_f</code> (times as <code>{hour, minute}</code> lists or decimal hours; latencies as numeric minutes), and <code>wd</code> (workdays per week).</p>
+<p><strong>Note on PSQI:</strong> <code>score_questionnaire("psqi", answers)</code> returns a named list with <code>global</code> and seven component scores (<code>C1</code>–<code>C7</code>). Use <code>result$global</code> for the total.</p>
 </blockquote>
 <blockquote>
-<p><strong>Note on PSQI:</strong> <code>score_questionnaire("psqi", answers)</code> returns a named list with the global score and all seven component scores (C1–C7). Use <code>result$global</code> for the total or access individual components directly.</p>
+<p><strong>Note on MCTQ:</strong> <code>score_questionnaire("mctq", answers)</code> returns a named list: <code>msfsc</code> (corrected mid-sleep on free days, decimal hours), <code>sjl</code> (social jetlag, hours), plus <code>msw</code>, <code>msf</code>, <code>sd_w</code>, <code>sd_f</code>. Expected answer keys: <code>bt_w</code>, <code>sl_w</code>, <code>wt_w</code>, <code>bt_f</code>, <code>sl_f</code>, <code>wt_f</code> (times as <code>{hour, minute}</code> lists or decimal hours; latencies as numeric minutes), and <code>wd</code> (workdays per week).</p>
+</blockquote>
+</div>
+<div class="section level3">
+<h3 id="brain-mental-health-beta">🧠 Mental Health <em>(beta)</em>
+<a class="anchor" aria-label="anchor" href="#brain-mental-health-beta"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>ID</th>
+<th>Full name</th>
+<th>Score range</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>phq2</code></td>
+<td>Patient Health Questionnaire – 2 items</td>
+<td>0–6</td>
+</tr>
+<tr>
+<td><code>phq9</code></td>
+<td>Patient Health Questionnaire – 9 items</td>
+<td>0–27</td>
+</tr>
+<tr>
+<td><code>phq15</code></td>
+<td>Patient Health Questionnaire – 15 items (somatic)</td>
+<td>0–30</td>
+</tr>
+<tr>
+<td><code>gad7</code></td>
+<td>Generalised Anxiety Disorder – 7 items</td>
+<td>0–21</td>
+</tr>
+<tr>
+<td><code>gad2</code></td>
+<td>Generalised Anxiety Disorder – 2 items</td>
+<td>0–6</td>
+</tr>
+<tr>
+<td><code>bdi2</code></td>
+<td>Beck Depression Inventory – Second Edition</td>
+<td>0–63</td>
+</tr>
+<tr>
+<td><code>bai</code></td>
+<td>Beck Anxiety Inventory</td>
+<td>0–63</td>
+</tr>
+<tr>
+<td><code>dass21</code></td>
+<td>Depression Anxiety Stress Scales – 21 items</td>
+<td>0–42 + subscales</td>
+</tr>
+<tr>
+<td><code>panss</code></td>
+<td>Positive and Negative Syndrome Scale</td>
+<td>30–210 + subscales</td>
+</tr>
+<tr>
+<td><code>stai_s</code></td>
+<td>State-Trait Anxiety Inventory – State subscale</td>
+<td>20–80</td>
+</tr>
+<tr>
+<td><code>stai_t</code></td>
+<td>State-Trait Anxiety Inventory – Trait subscale</td>
+<td>20–80</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note on DASS-21:</strong> returns a named list with <code>total</code>, <code>depression</code>, <code>anxiety</code>, and <code>stress</code> subscale scores (all scaled × 2 to align with DASS-42 norms).</p>
 </blockquote>
 <blockquote>
-<p><strong>Note on licensing:</strong> Some instruments require institutional permission for research use. Please verify licensing requirements for each instrument before use in a study.</p>
+<p><strong>Note on PANSS:</strong> returns a named list with <code>total</code>, <code>positive</code>, <code>negative</code>, and <code>general</code> subscale scores.</p>
 </blockquote>
+</div>
+<div class="section level3">
+<h3 id="herb-wellbeing-beta">🌿 Wellbeing <em>(beta)</em>
+<a class="anchor" aria-label="anchor" href="#herb-wellbeing-beta"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>ID</th>
+<th>Full name</th>
+<th>Score range</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>whoqol_bref</code></td>
+<td>WHO Quality of Life – Brief</td>
+<td>0–100 (+ 4 domain scores)</td>
+</tr>
+<tr>
+<td><code>macarthur_sss</code></td>
+<td>MacArthur Scale of Subjective Social Status</td>
+<td>0–20</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note on WHOQOL-BREF:</strong> returns a named list with <code>total</code> and four domain scores (<code>physical</code>, <code>psychological</code>, <code>social</code>, <code>environment</code>), each scaled 0–100.</p>
+</blockquote>
+</div>
+<div class="section level3">
+<h3 id="running-physical-activity-beta">🏃 Physical Activity <em>(beta)</em>
+<a class="anchor" aria-label="anchor" href="#running-physical-activity-beta"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>ID</th>
+<th>Full name</th>
+<th>Score</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>ipaq_short</code></td>
+<td>International Physical Activity Questionnaire – Short Form</td>
+<td>MET-min/week</td>
+</tr>
+<tr>
+<td><code>gpaq</code></td>
+<td>Global Physical Activity Questionnaire</td>
+<td>MET-min/week</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="jigsaw-neurodevelopmental-beta">🧩 Neurodevelopmental <em>(beta)</em>
+<a class="anchor" aria-label="anchor" href="#jigsaw-neurodevelopmental-beta"></a>
+</h3>
+<table class="table">
+<thead><tr>
+<th>ID</th>
+<th>Full name</th>
+<th>Score range</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>gsq</code></td>
+<td>Glasgow Sensory Questionnaire</td>
+<td>0–112</td>
+</tr>
+<tr>
+<td><code>aq10</code></td>
+<td>Autism Spectrum Quotient – 10 item screener</td>
+<td>0–10</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note on licensing:</strong> Several instruments require institutional permission for research use. Please verify licensing requirements for each instrument before use in a study.</p>
+</blockquote>
+<p>Instruments marked <strong>beta</strong> are included in ScoreMe and have scoring ported from the app, but have not yet been independently validated in tallieR. A warning is emitted when scoring beta instruments; suppress with <code><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings()</a></code> if intentional.</p>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="file_folder-custom-instruments">📁 Custom Instruments<a class="anchor" aria-label="anchor" href="#file_folder-custom-instruments"></a>
+</h2>
+<p>tallieR can score questionnaires not built into the package, as long as they are defined in a ScoreMe-compatible JSON spec. This allows study-specific or proprietary instruments to flow through the same pipeline without modifying tallieR source code.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load a single custom instrument</span></span>
+<span><span class="va">my_instr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_instrument.html">load_instrument</a></span><span class="op">(</span><span class="st">"path/to/fss.json"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Score it with the standard API</span></span>
+<span><span class="fu"><a href="reference/score_questionnaire.html">score_questionnaire</a></span><span class="op">(</span><span class="st">"fss"</span>, <span class="va">answers</span>, instruments <span class="op">=</span> <span class="va">my_instr</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load a whole directory of specs</span></span>
+<span><span class="va">custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_instrument_dir.html">load_instrument_dir</a></span><span class="op">(</span><span class="st">"instruments/"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Use with read_scoreme() so custom instruments are scored on import</span></span>
+<span><span class="va">exp</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme.html">read_scoreme</a></span><span class="op">(</span><span class="st">"export.json"</span>, instruments <span class="op">=</span> <span class="va">custom</span><span class="op">)</span></span>
+<span><span class="va">wide</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/scores_wide.html">scores_wide</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span></code></pre></div>
+<p>Supported scoring types compiled from the JSON spec: <code>"sum"</code>, <code>"weighted_sum"</code>, <code>"mean"</code>. Instruments with <code>"composite"</code> scoring (e.g. PSQI-style multi-component algorithms) can be loaded but return <code>NA</code> for scoring; you can override the compiled <code>score</code> function by assigning a custom one after loading:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">my_instr</span><span class="op">$</span><span class="va">my_id</span><span class="op">$</span><span class="va">score</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">answers</span><span class="op">)</span> <span class="op">{</span> <span class="va">...</span> <span class="op">}</span></span></code></pre></div>
+<p>See <code>vignette("custom-instruments", package = "tallieR")</code> and <code>system.file("extdata", "example_instrument.json", package = "tallieR")</code> for the full JSON spec schema.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="triangular_ruler-reliability-analysis">📐 Reliability Analysis<a class="anchor" aria-label="anchor" href="#triangular_ruler-reliability-analysis"></a>
+</h2>
+<p><code><a href="reference/cronbach_alpha.html">cronbach_alpha()</a></code> computes Cronbach’s α with exact 95% confidence intervals (Feldt et al., 1987) for any questionnaire present in the data.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">study</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_scoreme_dir.html">read_scoreme_dir</a></span><span class="op">(</span><span class="st">"exports/"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># All questionnaires</span></span>
+<span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  questionnaire_id alpha ci_lower ci_upper n_items n_obs note</span></span>
+<span><span class="co">#&gt;               ess  0.87     0.82     0.91       8    48   NA</span></span>
+<span><span class="co">#&gt;               isi  0.91     0.87     0.94       7    48   NA</span></span>
+<span><span class="co">#&gt;               phq9 0.85     0.80     0.90       9    42   NA</span></span>
+<span><span class="co">#&gt;  ...</span></span>
+<span></span>
+<span><span class="co"># Specific subset</span></span>
+<span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">study</span>, questionnaires <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ess"</span>, <span class="st">"isi"</span>, <span class="st">"phq9"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># From an items_long() data frame (e.g. after filtering)</span></span>
+<span><span class="va">items</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/items_long.html">items_long</a></span><span class="op">(</span><span class="va">study</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/cronbach_alpha.html">cronbach_alpha</a></span><span class="op">(</span><span class="va">items</span><span class="op">)</span></span></code></pre></div>
+<p>Non-numeric items (MCTQ clock times, STOP-BANG yes/no) are silently dropped before estimation. The function accepts either a <code>tallier_export</code>/<code>tallier_study</code> object or a data frame returned by <code><a href="reference/items_long.html">items_long()</a></code>.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -439,8 +674,12 @@
 <div class="section level2">
 <h2 id="page_facing_up-licence">📄 Licence<a class="anchor" aria-label="anchor" href="#page_facing_up-licence"></a>
 </h2>
-<p>Released under the <a href="./LICENSE">MIT License</a>.</p>
+<p><img src="logo.png"></p>
 <p>Copyright © Lucas França, Mario Leocadio-Miguel, 2026</p>
+<p>Released under the <a href="./LICENSE">MIT License</a>.</p>
+<blockquote>
+<p><strong>Note on third-party questionnaire instruments:</strong> The validated questionnaires supported by tallieR are the intellectual property of their respective authors and institutions. Their inclusion in this open-source package does not grant any rights to use them beyond what is permitted by each instrument’s licence. It is the responsibility of the researcher to obtain any necessary permissions before use in a study.</p>
+</blockquote>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
