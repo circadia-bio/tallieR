@@ -176,3 +176,89 @@ interpret_score <- function(id, score, instruments = NULL) {
   }
   inst$interpret(score)
 }
+
+#' Interpret all questionnaire scores in an export
+#'
+#' Returns a long data frame with one row per participant x questionnaire x
+#' administration, augmented with clinical interpretation columns (`label`,
+#' `color`, `description`). Mirrors the shape of [scores_long()] so the two
+#' can be joined by `participant_id` + `questionnaire_id` + `completed_at`.
+#'
+#' Scores that cannot be interpreted (unknown instrument, `NA` score, or
+#' composite score with no matching band) return `NA` in all three
+#' interpretation columns rather than an error, so the rest of the study
+#' data is unaffected.
+#'
+#' @param obj A `tallier_export` or `tallier_study` object.
+#' @param include_meta Logical. If `TRUE` (default), participant metadata
+#'   columns are prepended (same columns as [scores_long()]).
+#' @param instruments An optional named list of additional registry entries
+#'   from [load_instrument()] or [load_instrument_dir()].
+#'
+#' @return A `data.frame` with columns: participant metadata (optional),
+#'   `questionnaire_id`, `completed_at`, `score`, `label`, `color`,
+#'   `description`.
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#' interps <- interpret_all(study)
+#'
+#' # Join with scores_long() if you need both
+#' scores <- scores_long(study)
+#' full   <- merge(scores, interps[
+#'   c("participant_id", "questionnaire_id", "completed_at",
+#'     "label", "color", "description")
+#' ], by = c("participant_id", "questionnaire_id", "completed_at"),
+#'   all.x = TRUE)
+#' }
+#'
+#' @seealso [interpret_score()], [scores_long()]
+#'
+#' @export
+interpret_all <- function(obj, include_meta = TRUE, instruments = NULL) {
+  participants <- obj[["participants"]]
+
+  rows <- purrr::map_dfr(participants, function(p) {
+    meta <- p$meta
+
+    if (length(p$results) == 0L) return(NULL)
+
+    purrr::map_dfr(p$results, function(r) {
+      interp <- tryCatch(
+        suppressWarnings(interpret_score(r$questionnaire_id, r$score, instruments = instruments)),
+        error = function(e) list(label = NA_character_, color = NA_character_, description = NA_character_)
+      )
+
+      score_val <- r$score
+      if (is.list(score_val)) {
+        score_val <- jsonlite::toJSON(score_val, auto_unbox = TRUE)
+      }
+
+      data.frame(
+        participant_id   = meta$participant_id %||% NA_character_,
+        code             = meta$code           %||% NA_character_,
+        questionnaire_id = r$questionnaire_id,
+        completed_at     = r$completed_at,
+        score            = as.character(score_val),
+        label            = interp$label       %||% NA_character_,
+        color            = interp$color       %||% NA_character_,
+        description      = interp$description %||% NA_character_,
+        stringsAsFactors = FALSE
+      )
+    })
+  })
+
+  if (is.null(rows) || nrow(rows) == 0L) return(data.frame())
+
+  if (include_meta) {
+    meta_df <- purrr::map_dfr(participants, function(p) {
+      as.data.frame(p$meta, stringsAsFactors = FALSE)
+    })
+    rows <- merge(meta_df, rows,
+                  by = c("participant_id", "code"),
+                  all.y = TRUE)
+  }
+
+  rows
+}

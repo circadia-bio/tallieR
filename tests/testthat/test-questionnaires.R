@@ -318,3 +318,94 @@ test_that("score_questionnaire does not warn for stable instruments", {
 test_that("unknown questionnaire id gives informative error", {
   expect_error(score_questionnaire("xyz", list()), "Unknown questionnaire id")
 })
+
+# ── interpret_all() ───────────────────────────────────────────────────────────
+
+.make_minimal_export <- function() {
+  structure(
+    list(
+      exported_at    = "2026-01-01T00:00:00.000Z",
+      export_version = "1.0",
+      n_participants = 1L,
+      participants   = list(
+        list(
+          meta    = list(participant_id = "p1", code = "P001", name = "Test",
+                         age = "30", sex = "female", bmi = "", group = "",
+                         site = "", session = "", diagnosis = "",
+                         medication = "", referral = "", notes = "",
+                         created_at = "2026-01-01T00:00:00.000Z"),
+          results = list(
+            list(questionnaire_id = "ess",
+                 completed_at     = "2026-01-01T09:00:00.000Z",
+                 score            = 12,
+                 answers          = list(ess1=2,ess2=1,ess3=0,ess4=3,
+                                        ess5=1,ess6=0,ess7=2,ess8=3)),
+            list(questionnaire_id = "isi",
+                 completed_at     = "2026-01-01T09:05:00.000Z",
+                 score            = 8,
+                 answers          = list(isi1=1,isi2=1,isi3=1,isi4=1,
+                                        isi5=1,isi6=1,isi7=2))
+          )
+        )
+      )
+    ),
+    class = "tallier_export"
+  )
+}
+
+test_that("interpret_all() returns correct shape", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj)
+
+  expect_true(is.data.frame(out))
+  expected_cols <- c("participant_id", "code", "questionnaire_id",
+                     "completed_at", "score", "label", "color", "description")
+  expect_true(all(expected_cols %in% names(out)))
+  expect_equal(nrow(out), 2L)  # one row per result
+})
+
+test_that("interpret_all() returns correct interpretation values", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj)
+
+  ess_row <- out[out$questionnaire_id == "ess", ]
+  expect_equal(ess_row$label, "Excessive")   # ESS 12 -> Excessive sleepiness
+  expect_false(is.na(ess_row$color))
+  expect_false(is.na(ess_row$description))
+})
+
+test_that("interpret_all() handles unknown instrument gracefully", {
+  obj <- .make_minimal_export()
+  # Inject a result with an unrecognised questionnaire id
+  obj$participants[[1]]$results[[3]] <- list(
+    questionnaire_id = "unknown_q",
+    completed_at     = "2026-01-01T09:10:00.000Z",
+    score            = 5,
+    answers          = list()
+  )
+  out <- suppressWarnings(interpret_all(obj))
+
+  unknown_row <- out[out$questionnaire_id == "unknown_q", ]
+  expect_equal(nrow(unknown_row), 1L)
+  expect_true(is.na(unknown_row$label))
+})
+
+test_that("interpret_all() include_meta = FALSE drops metadata columns", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj, include_meta = FALSE)
+
+  expect_false("name" %in% names(out))
+  expect_false("age"  %in% names(out))
+  expect_true("participant_id" %in% names(out))
+})
+
+test_that("interpret_all() returns empty data frame for empty export", {
+  empty <- structure(
+    list(exported_at = NA, export_version = "1.0",
+         participants = list(), n_participants = 0L),
+    class = "tallier_export"
+  )
+  out <- interpret_all(empty)
+  expect_true(is.data.frame(out))
+  expect_equal(nrow(out), 0L)
+})
