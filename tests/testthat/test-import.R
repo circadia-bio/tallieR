@@ -46,3 +46,107 @@ test_that("read_scoreme rescores correctly", {
   # 2+1+0+3+1+0+2+1 = 10
   expect_equal(ess_result$score, 10)
 })
+
+# ── summary() ─────────────────────────────────────────────────────────────
+
+.make_export_for_summary <- function() {
+  structure(
+    list(
+      exported_at    = "2026-01-10T12:00:00.000Z",
+      export_version = "1.0",
+      n_participants = 2L,
+      participants   = list(
+        list(
+          meta    = list(participant_id = "p1", code = "P001", name = "Alice",
+                         age = "28", sex = "female", bmi = "", group = "",
+                         site = "", session = "", diagnosis = "",
+                         medication = "", referral = "", notes = "",
+                         created_at = "2026-01-01T00:00:00.000Z"),
+          results = list(
+            list(questionnaire_id = "ess",
+                 completed_at     = "2026-01-05T09:00:00.000Z",
+                 score = 10, answers = list()),
+            list(questionnaire_id = "isi",
+                 completed_at     = "2026-01-05T09:10:00.000Z",
+                 score = 8,  answers = list())
+          )
+        ),
+        list(
+          meta    = list(participant_id = "p2", code = "P002", name = "Bob",
+                         age = "35", sex = "male", bmi = "", group = "",
+                         site = "", session = "", diagnosis = "",
+                         medication = "", referral = "", notes = "",
+                         created_at = "2026-01-02T00:00:00.000Z"),
+          results = list(
+            list(questionnaire_id = "ess",
+                 completed_at     = "2026-01-08T09:00:00.000Z",
+                 score = 14, answers = list())
+            # Note: p2 has no ISI — tests partial completion
+          )
+        )
+      )
+    ),
+    class = "tallier_export"
+  )
+}
+
+test_that("summary.tallier_export returns correct structure", {
+  obj <- .make_export_for_summary()
+  s   <- summary(obj)
+
+  expect_equal(s$n_participants, 2L)
+  expect_true(all(c("ess", "isi") %in% s$instruments))
+  expect_true(is.data.frame(s$completion))
+  expect_true(all(c("questionnaire_id", "n", "pct") %in% names(s$completion)))
+})
+
+test_that("summary.tallier_export completion rates are correct", {
+  obj <- .make_export_for_summary()
+  s   <- summary(obj)
+
+  ess_row <- s$completion[s$completion$questionnaire_id == "ess", ]
+  isi_row <- s$completion[s$completion$questionnaire_id == "isi", ]
+
+  # Both participants completed ESS
+  expect_equal(ess_row$n,   2L)
+  expect_equal(ess_row$pct, 100)
+
+  # Only p1 completed ISI
+  expect_equal(isi_row$n,   1L)
+  expect_equal(isi_row$pct, 50)
+})
+
+test_that("summary.tallier_export date range is correct", {
+  obj <- .make_export_for_summary()
+  s   <- summary(obj)
+
+  expect_equal(s$date_range["min"], c(min = "2026-01-05T09:00:00.000Z"))
+  expect_equal(s$date_range["max"], c(max = "2026-01-08T09:00:00.000Z"))
+})
+
+test_that("summary.tallier_export handles empty export gracefully", {
+  empty <- structure(
+    list(exported_at = NA, export_version = "1.0",
+         participants = list(), n_participants = 0L),
+    class = "tallier_export"
+  )
+  s <- summary(empty)
+  expect_equal(s$n_participants, 0L)
+  expect_equal(length(s$instruments), 0L)
+  expect_true(is.na(s$date_range["min"]))
+})
+
+test_that("summary.tallier_study includes n_files", {
+  study <- structure(
+    list(
+      files          = c("a.json", "b.json"),
+      n_participants = 2L,
+      participants   = .make_export_for_summary()$participants
+    ),
+    class = "tallier_study"
+  )
+  s <- summary(study)
+  expect_equal(s$n_files, 2L)
+  expect_equal(s$n_participants, 2L)
+  expect_true(all(c("ess", "isi") %in% s$instruments))
+})
