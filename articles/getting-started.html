@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting started with tallieR • tallieR</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Afacad-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Afacad-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/Livvic-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -93,7 +93,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tallieR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -282,26 +282,60 @@ score:</p>
 </h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/available_instruments.html">available_instruments</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         id                                                     title domain</span></span>
-<span><span class="co">#&gt; 1      ess                                  Epworth Sleepiness Scale  Sleep</span></span>
-<span><span class="co">#&gt; 2      isi                                   Insomnia Severity Index  Sleep</span></span>
-<span><span class="co">#&gt; 3   dbas16 Dysfunctional Beliefs and Attitudes about Sleep (DBAS-16)  Sleep</span></span>
-<span><span class="co">#&gt; 4      meq                     Morningness-Eveningness Questionnaire  Sleep</span></span>
-<span><span class="co">#&gt; 5     psqi                            Pittsburgh Sleep Quality Index  Sleep</span></span>
-<span><span class="co">#&gt; 6  rusated                               RU-SATED Sleep Health Scale  Sleep</span></span>
-<span><span class="co">#&gt; 7 stopbang                                   STOP-BANG Questionnaire  Sleep</span></span>
-<span><span class="co">#&gt; 8      kss                               Karolinska Sleepiness Scale  Sleep</span></span>
-<span><span class="co">#&gt; 9     mctq                           Munich Chronotype Questionnaire  Sleep</span></span>
-<span><span class="co">#&gt;   max_score</span></span>
-<span><span class="co">#&gt; 1        24</span></span>
-<span><span class="co">#&gt; 2        28</span></span>
-<span><span class="co">#&gt; 3        10</span></span>
-<span><span class="co">#&gt; 4        86</span></span>
-<span><span class="co">#&gt; 5        21</span></span>
-<span><span class="co">#&gt; 6        24</span></span>
-<span><span class="co">#&gt; 7         8</span></span>
-<span><span class="co">#&gt; 8        10</span></span>
-<span><span class="co">#&gt; 9        NA</span></span></code></pre></div>
+<span><span class="co">#&gt;               id                                                      title</span></span>
+<span><span class="co">#&gt; 1            ess                                   Epworth Sleepiness Scale</span></span>
+<span><span class="co">#&gt; 2            isi                                    Insomnia Severity Index</span></span>
+<span><span class="co">#&gt; 3         dbas16  Dysfunctional Beliefs and Attitudes about Sleep (DBAS-16)</span></span>
+<span><span class="co">#&gt; 4            meq                      Morningness-Eveningness Questionnaire</span></span>
+<span><span class="co">#&gt; 5           psqi                             Pittsburgh Sleep Quality Index</span></span>
+<span><span class="co">#&gt; 6        rusated                                RU-SATED Sleep Health Scale</span></span>
+<span><span class="co">#&gt; 7       stopbang                                    STOP-BANG Questionnaire</span></span>
+<span><span class="co">#&gt; 8            kss                                Karolinska Sleepiness Scale</span></span>
+<span><span class="co">#&gt; 9           mctq                            Munich Chronotype Questionnaire</span></span>
+<span><span class="co">#&gt; 10          phq2                     Patient Health Questionnaire - 2 items</span></span>
+<span><span class="co">#&gt; 11          phq9                     Patient Health Questionnaire - 9 items</span></span>
+<span><span class="co">#&gt; 12         phq15 Patient Health Questionnaire - 15 items (Somatic Symptoms)</span></span>
+<span><span class="co">#&gt; 13          gad7                     Generalised Anxiety Disorder - 7 items</span></span>
+<span><span class="co">#&gt; 14          gad2                     Generalised Anxiety Disorder - 2 items</span></span>
+<span><span class="co">#&gt; 15          bdi2                 Beck Depression Inventory - Second Edition</span></span>
+<span><span class="co">#&gt; 16           bai                                     Beck Anxiety Inventory</span></span>
+<span><span class="co">#&gt; 17        dass21                Depression Anxiety Stress Scales - 21 items</span></span>
+<span><span class="co">#&gt; 18         panss                       Positive and Negative Syndrome Scale</span></span>
+<span><span class="co">#&gt; 19        stai_s             State-Trait Anxiety Inventory - State subscale</span></span>
+<span><span class="co">#&gt; 20        stai_t             State-Trait Anxiety Inventory - Trait subscale</span></span>
+<span><span class="co">#&gt; 21   whoqol_bref  World Health Organization Quality of Life - Brief version</span></span>
+<span><span class="co">#&gt; 22 macarthur_sss                MacArthur Scale of Subjective Social Status</span></span>
+<span><span class="co">#&gt; 23    ipaq_short International Physical Activity Questionnaire - Short Form</span></span>
+<span><span class="co">#&gt; 24          gpaq                     Global Physical Activity Questionnaire</span></span>
+<span><span class="co">#&gt; 25           gsq                              Glasgow Sensory Questionnaire</span></span>
+<span><span class="co">#&gt; 26          aq10                Autism Spectrum Quotient - 10 item screener</span></span>
+<span><span class="co">#&gt;                domain max_score  beta</span></span>
+<span><span class="co">#&gt; 1               Sleep        24 FALSE</span></span>
+<span><span class="co">#&gt; 2               Sleep        28 FALSE</span></span>
+<span><span class="co">#&gt; 3               Sleep        10 FALSE</span></span>
+<span><span class="co">#&gt; 4               Sleep        86 FALSE</span></span>
+<span><span class="co">#&gt; 5               Sleep        21 FALSE</span></span>
+<span><span class="co">#&gt; 6               Sleep        24 FALSE</span></span>
+<span><span class="co">#&gt; 7               Sleep         8 FALSE</span></span>
+<span><span class="co">#&gt; 8               Sleep        10 FALSE</span></span>
+<span><span class="co">#&gt; 9               Sleep        NA FALSE</span></span>
+<span><span class="co">#&gt; 10      Mental Health         6  TRUE</span></span>
+<span><span class="co">#&gt; 11      Mental Health        27  TRUE</span></span>
+<span><span class="co">#&gt; 12      Mental Health        30  TRUE</span></span>
+<span><span class="co">#&gt; 13      Mental Health        21  TRUE</span></span>
+<span><span class="co">#&gt; 14      Mental Health         6  TRUE</span></span>
+<span><span class="co">#&gt; 15      Mental Health        63  TRUE</span></span>
+<span><span class="co">#&gt; 16      Mental Health        63  TRUE</span></span>
+<span><span class="co">#&gt; 17      Mental Health        42  TRUE</span></span>
+<span><span class="co">#&gt; 18      Mental Health       210  TRUE</span></span>
+<span><span class="co">#&gt; 19      Mental Health        80  TRUE</span></span>
+<span><span class="co">#&gt; 20      Mental Health        80  TRUE</span></span>
+<span><span class="co">#&gt; 21          Wellbeing       100  TRUE</span></span>
+<span><span class="co">#&gt; 22          Wellbeing        20  TRUE</span></span>
+<span><span class="co">#&gt; 23  Physical Activity        NA  TRUE</span></span>
+<span><span class="co">#&gt; 24  Physical Activity        NA  TRUE</span></span>
+<span><span class="co">#&gt; 25 Neurodevelopmental       112  TRUE</span></span>
+<span><span class="co">#&gt; 26 Neurodevelopmental        10  TRUE</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

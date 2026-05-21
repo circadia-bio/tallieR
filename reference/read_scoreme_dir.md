@@ -7,7 +7,12 @@ as a separate file, or when multiple batch exports need to be merged.
 ## Usage
 
 ``` r
-read_scoreme_dir(dir, rescore = TRUE, pattern = "\\.json$")
+read_scoreme_dir(
+  dir,
+  rescore = TRUE,
+  pattern = "\\.json$",
+  instruments = NULL
+)
 ```
 
 ## Arguments
@@ -25,6 +30,14 @@ read_scoreme_dir(dir, rescore = TRUE, pattern = "\\.json$")
 
   Regular expression used to filter filenames. Defaults to `"\\.json$"`
   (all JSON files).
+
+- instruments:
+
+  An optional named list of custom instrument registry entries, passed
+  through to
+  [`read_scoreme()`](https://tallier.circadia-lab.uk/reference/read_scoreme.md).
+  See
+  [`load_instrument()`](https://tallier.circadia-lab.uk/reference/load_instrument.md).
 
 ## Value
 

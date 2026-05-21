@@ -1,15 +1,19 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://tallier.circadia-lab.uk/404.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/LICENSE-text.html</loc></url>
-<url><loc>https://tallier.circadia-lab.uk/LICENSE.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/articles/getting-started.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/articles/index.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/authors.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/index.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/available_instruments.html</loc></url>
+<url><loc>https://tallier.circadia-lab.uk/reference/cronbach_alpha.html</loc></url>
+<url><loc>https://tallier.circadia-lab.uk/reference/dot-alpha_from_matrix.html</loc></url>
+<url><loc>https://tallier.circadia-lab.uk/reference/dot-items_to_matrix.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/index.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/interpret_score.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/items_long.html</loc></url>
+<url><loc>https://tallier.circadia-lab.uk/reference/load_instrument.html</loc></url>
+<url><loc>https://tallier.circadia-lab.uk/reference/load_instrument_dir.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/read_scoreme.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/read_scoreme_dir.html</loc></url>
 <url><loc>https://tallier.circadia-lab.uk/reference/score_all.html</loc></url>

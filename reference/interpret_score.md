@@ -6,7 +6,7 @@ questionnaire, matching the score bands used in the ScoreMe app.
 ## Usage
 
 ``` r
-interpret_score(id, score)
+interpret_score(id, score, instruments = NULL)
 ```
 
 ## Arguments
@@ -17,7 +17,14 @@ interpret_score(id, score)
 
 - score:
 
-  Numeric score (or named list for PSQI).
+  Numeric score (or named list for composite instruments).
+
+- instruments:
+
+  An optional named list of additional registry entries from
+  [`load_instrument()`](https://tallier.circadia-lab.uk/reference/load_instrument.md)
+  or
+  [`load_instrument_dir()`](https://tallier.circadia-lab.uk/reference/load_instrument_dir.md).
 
 ## Value
 

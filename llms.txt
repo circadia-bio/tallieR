@@ -258,6 +258,15 @@ Read ScoreMe JSON exports into R.
 - [`read_scoreme_dir()`](https://tallier.circadia-lab.uk/reference/read_scoreme_dir.md)
   : Read a directory of ScoreMe JSON exports
 
+## Custom instruments
+
+Load any ScoreMe-compatible JSON instrument spec for use in tallieR.
+
+- [`load_instrument()`](https://tallier.circadia-lab.uk/reference/load_instrument.md)
+  : Load a custom instrument from a ScoreMe JSON spec
+- [`load_instrument_dir()`](https://tallier.circadia-lab.uk/reference/load_instrument_dir.md)
+  : Load all custom instruments from a directory
+
 ## Tidy output
 
 Reshape imported data into analysis-ready data frames.
@@ -281,6 +290,13 @@ Score and interpret validated instruments from raw item responses.
   : Interpret a questionnaire score
 - [`available_instruments()`](https://tallier.circadia-lab.uk/reference/available_instruments.md)
   : List available instruments
+
+## Reliability
+
+Internal consistency and reliability statistics.
+
+- [`cronbach_alpha()`](https://tallier.circadia-lab.uk/reference/cronbach_alpha.md)
+  : Cronbach's alpha for one or more questionnaires
 
 ## Package
 
