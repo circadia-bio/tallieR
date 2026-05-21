@@ -99,9 +99,16 @@ scores_wide <- function(obj, include_meta = TRUE) {
   long  <- scores_long(obj)
   if (nrow(long) == 0) return(long)
 
-  # Keep only the most recent administration per participant × questionnaire
-  long <- long[order(long$completed_at, decreasing = TRUE), ]
-  long <- long[!duplicated(paste(long$participant_id, long$questionnaire_id)), ]
+  # Keep only the most recent administration per participant × questionnaire.
+  # slice_max() is safer than order() + !duplicated(): it handles ties
+  # consistently and avoids relying on stable sort order for deduplication.
+  long <- dplyr::slice_max(
+    dplyr::group_by(long, .data$participant_id, .data$questionnaire_id),
+    order_by = .data$completed_at,
+    n = 1L,
+    with_ties = FALSE
+  )
+  long <- dplyr::ungroup(long)
 
   wide <- tidyr::pivot_wider(
     long,

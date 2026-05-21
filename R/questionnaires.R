@@ -138,6 +138,8 @@ score_questionnaire <- function(id, answers, instruments = NULL) {
 #'
 #' @export
 score_all <- function(obj, instruments = NULL) {
+  beta_seen <- character(0)
+
   obj$participants <- lapply(obj$participants, function(p) {
     p$results <- lapply(p$results, function(r) {
       rescored <- tryCatch(
@@ -145,10 +147,30 @@ score_all <- function(obj, instruments = NULL) {
         error = function(e) NULL
       )
       if (!is.null(rescored)) r$score <- rescored
+
+      # Track beta instruments encountered (without warning yet)
+      registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+      inst <- registry[[tolower(r$questionnaire_id)]]
+      if (isTRUE(inst$beta)) {
+        beta_seen <<- union(beta_seen, r$questionnaire_id)
+      }
+
       r
     })
     p
   })
+
+  # One study-level warning covering all beta instruments found, rather than
+  # one warning per participant × instrument.
+  if (length(beta_seen) > 0L) {
+    ids <- paste(paste0("'", beta_seen, "'"), collapse = ", ")
+    rlang::warn(paste0(
+      "Beta instrument(s) scored: ", ids, ". ",
+      "Scoring matches the ScoreMe app but has not yet been independently ",
+      "validated in tallieR. Suppress with suppressWarnings() if intentional."
+    ))
+  }
+
   obj
 }
 
