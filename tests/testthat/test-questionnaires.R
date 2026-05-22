@@ -87,10 +87,79 @@ test_that("score_questionnaire: MCTQ", {
   )
   result <- score_questionnaire("mctq", answers)
   expect_true(is.list(result))
-  expect_true(all(c("msfsc", "sjl", "msw", "msf", "sd_w", "sd_f") %in% names(result)))
+
+  # All expected fields present
+  expect_true(all(c("msfsc", "sjl", "sjl_rel", "msw", "msf",
+                    "sd_w", "sd_f", "sd_week",
+                    "alarm_w", "alarm_f") %in% names(result)))
+
+  # sjl is absolute (non-negative)
   expect_gte(result$sjl, 0)
+
+  # sd_week is a weighted average of sd_w and sd_f (5 workdays, 2 free days)
+  # sd_w: 07:00 - (23:00 + 15/60) = 7.75h; sd_f: 09:00 - (00:30 + 10/60) = 8.33h
+  expected_sd_week <- round((result$sd_w * 5 + result$sd_f * 2) / 7, 2)
+  expect_equal(result$sd_week, expected_sd_week)
+
+  # sjl_rel is signed and wrapped to (-12, +12]. Check it is consistent with
+  # the stored msfsc/msw modulo 24h wrapping.
+  expect_true(is.numeric(result$sjl_rel))
+  expect_gte(result$sjl_rel, -12)
+  expect_lte(result$sjl_rel,  12)
+  raw_diff <- (result$msfsc %% 24) - (result$msw %% 24)
+  expected_sjl_rel <- ((raw_diff + 12) %% 24) - 12
+  expect_equal(result$sjl_rel, round(expected_sjl_rel, 2), tolerance = 0.02)
+
+  # alarm flags absent from answers -> NA
+  expect_true(is.na(result$alarm_w))
+  expect_true(is.na(result$alarm_f))
+
+  # interpret still works
   interp <- interpret_score("mctq", result)
   expect_true(nchar(interp$label) > 0)
+})
+
+test_that("MCTQ alarm flags parsed correctly when present", {
+  answers_alarm <- list(
+    bt_w = list(hour = 23, minute = 0), sl_w = 15,
+    wt_w = list(hour =  7, minute = 0),
+    bt_f = list(hour =  0, minute = 0),  sl_f = 10,
+    wt_f = list(hour =  9, minute = 0),
+    wd   = 5,
+    alarm_w = "yes",
+    alarm_f = "no"
+  )
+  result <- score_questionnaire("mctq", answers_alarm)
+  expect_true(isTRUE(result$alarm_w))
+  expect_true(isFALSE(result$alarm_f))
+})
+
+test_that("MCTQ sjl_rel wraps correctly across midnight", {
+  # MSFsc near 0:30 (early riser on free days), MSW near 23:30 (very late on workdays)
+  # Naive formula: 0.5 - 23.5 = -23, correct answer: +1
+  answers_midnight <- list(
+    bt_w = list(hour = 22, minute = 0), sl_w = 60,
+    wt_w = list(hour =  2, minute = 0),  # MSW ~ 01:00 but sleep is late -> MSW 24h math
+    bt_f = list(hour = 23, minute = 0), sl_f = 30,
+    wt_f = list(hour =  2, minute = 0),
+    wd   = 5
+  )
+  result <- score_questionnaire("mctq", answers_midnight)
+  # sjl_rel must be in (-12, 12]
+  expect_gte(result$sjl_rel, -12)
+  expect_lte(result$sjl_rel,  12)
+
+  # Extreme case: MSFsc = 0.5h, MSW = 23.5h -> sjl_rel should be +1, not -23
+  answers_extreme <- list(
+    bt_w = list(hour = 22, minute = 30), sl_w =  0,
+    wt_w = list(hour =  1, minute =  0),   # sd_w = 2.5h, MSW = 23.75h
+    bt_f = list(hour = 23, minute = 30), sl_f =  0,
+    wt_f = list(hour =  2, minute =  0),   # sd_f = 2.5h, MSF = 0.75h
+    wd   = 5
+  )
+  result2 <- score_questionnaire("mctq", answers_extreme)
+  expect_lt(abs(result2$sjl_rel), 12)
+  expect_gt(result2$sjl_rel, -2)  # should be a small positive number (~+1), not -23
 })
 
 # ── Mental Health ─────────────────────────────────────────────────────────────
@@ -290,7 +359,8 @@ test_that("score_questionnaire: AQ-10", {
 test_that("available_instruments returns expected columns and IDs", {
   inst <- available_instruments()
   expect_true(is.data.frame(inst))
-  expect_true(all(c("id", "title", "domain", "max_score", "beta") %in% names(inst)))
+  expect_true(all(c("id", "title", "domain", "max_score", "beta",
+                    "has_reverse", "returns_list") %in% names(inst)))
 
   # All original sleep instruments still present and non-beta
   sleep_ids <- c("ess", "isi", "dbas16", "meq", "psqi", "rusated", "stopbang", "kss", "mctq")
@@ -303,6 +373,16 @@ test_that("available_instruments returns expected columns and IDs", {
                "ipaq_short", "gpaq", "gsq", "aq10")
   expect_true(all(new_ids %in% inst$id))
   expect_true(all(inst$beta[inst$id %in% new_ids]))
+
+  # Only STAI-S and STAI-T have reverse items
+  expect_true(inst$has_reverse[inst$id == "stai_s"])
+  expect_true(inst$has_reverse[inst$id == "stai_t"])
+  expect_true(all(!inst$has_reverse[!inst$id %in% c("stai_s", "stai_t")]))
+
+  # Composite instruments flagged correctly
+  composite_ids <- c("psqi", "mctq", "dass21", "panss", "whoqol_bref")
+  expect_true(all(inst$returns_list[inst$id %in% composite_ids]))
+  expect_true(all(!inst$returns_list[!inst$id %in% composite_ids]))
 })
 
 test_that("score_questionnaire emits warning for beta instruments", {
@@ -317,4 +397,95 @@ test_that("score_questionnaire does not warn for stable instruments", {
 
 test_that("unknown questionnaire id gives informative error", {
   expect_error(score_questionnaire("xyz", list()), "Unknown questionnaire id")
+})
+
+# ── interpret_all() ───────────────────────────────────────────────────────────
+
+.make_minimal_export <- function() {
+  structure(
+    list(
+      exported_at    = "2026-01-01T00:00:00.000Z",
+      export_version = "1.0",
+      n_participants = 1L,
+      participants   = list(
+        list(
+          meta    = list(participant_id = "p1", code = "P001", name = "Test",
+                         age = "30", sex = "female", bmi = "", group = "",
+                         site = "", session = "", diagnosis = "",
+                         medication = "", referral = "", notes = "",
+                         created_at = "2026-01-01T00:00:00.000Z"),
+          results = list(
+            list(questionnaire_id = "ess",
+                 completed_at     = "2026-01-01T09:00:00.000Z",
+                 score            = 12,
+                 answers          = list(ess1=2,ess2=1,ess3=0,ess4=3,
+                                        ess5=1,ess6=0,ess7=2,ess8=3)),
+            list(questionnaire_id = "isi",
+                 completed_at     = "2026-01-01T09:05:00.000Z",
+                 score            = 8,
+                 answers          = list(isi1=1,isi2=1,isi3=1,isi4=1,
+                                        isi5=1,isi6=1,isi7=2))
+          )
+        )
+      )
+    ),
+    class = "tallier_export"
+  )
+}
+
+test_that("interpret_all() returns correct shape", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj)
+
+  expect_true(is.data.frame(out))
+  expected_cols <- c("participant_id", "code", "questionnaire_id",
+                     "completed_at", "score", "label", "color", "description")
+  expect_true(all(expected_cols %in% names(out)))
+  expect_equal(nrow(out), 2L)  # one row per result
+})
+
+test_that("interpret_all() returns correct interpretation values", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj)
+
+  ess_row <- out[out$questionnaire_id == "ess", ]
+  expect_equal(ess_row$label, "Excessive")   # ESS 12 -> Excessive sleepiness
+  expect_false(is.na(ess_row$color))
+  expect_false(is.na(ess_row$description))
+})
+
+test_that("interpret_all() handles unknown instrument gracefully", {
+  obj <- .make_minimal_export()
+  # Inject a result with an unrecognised questionnaire id
+  obj$participants[[1]]$results[[3]] <- list(
+    questionnaire_id = "unknown_q",
+    completed_at     = "2026-01-01T09:10:00.000Z",
+    score            = 5,
+    answers          = list()
+  )
+  out <- suppressWarnings(interpret_all(obj))
+
+  unknown_row <- out[out$questionnaire_id == "unknown_q", ]
+  expect_equal(nrow(unknown_row), 1L)
+  expect_true(is.na(unknown_row$label))
+})
+
+test_that("interpret_all() include_meta = FALSE drops metadata columns", {
+  obj <- .make_minimal_export()
+  out <- interpret_all(obj, include_meta = FALSE)
+
+  expect_false("name" %in% names(out))
+  expect_false("age"  %in% names(out))
+  expect_true("participant_id" %in% names(out))
+})
+
+test_that("interpret_all() returns empty data frame for empty export", {
+  empty <- structure(
+    list(exported_at = NA, export_version = "1.0",
+         participants = list(), n_participants = 0L),
+    class = "tallier_export"
+  )
+  out <- interpret_all(empty)
+  expect_true(is.data.frame(out))
+  expect_equal(nrow(out), 0L)
 })

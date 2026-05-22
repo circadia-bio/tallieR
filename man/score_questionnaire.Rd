@@ -4,27 +4,50 @@
 \alias{score_questionnaire}
 \title{Score a questionnaire from item-level answers}
 \usage{
-score_questionnaire(id, answers)
+score_questionnaire(id, answers, instruments = NULL)
 }
 \arguments{
 \item{id}{Character. Questionnaire identifier (e.g. \code{"ess"}, \code{"psqi"}).
-See \code{\link[=available_instruments]{available_instruments()}} for valid IDs.}
+See \code{\link[=available_instruments]{available_instruments()}} for valid IDs. For custom instruments,
+this must match the \code{id} field in the spec passed to \code{instruments}.}
 
 \item{answers}{A named list of item responses, as exported by ScoreMe.
 Keys are item IDs (e.g. \code{"ess1"}, \code{"psqi2"}); values are the raw
 responses (numeric, character \code{"yes"}/\code{"no"}, or clock-time list).}
+
+\item{instruments}{An optional named list of additional instrument
+registry entries, as returned by \code{\link[=load_instrument]{load_instrument()}} or
+\code{\link[=load_instrument_dir]{load_instrument_dir()}}. These are searched first, before the built-in
+registry, so a custom entry can override a built-in if needed.}
 }
 \value{
-For most instruments: a single numeric score. For PSQI: a named
-list with the global score and component scores C1-C7.
+For most instruments: a single numeric score. For composite
+instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF): a named list
+of subscale and total scores.
 }
 \description{
 Computes the score for a single questionnaire using the official scoring
-algorithm embedded in tallieR.
+algorithm embedded in tallieR, or a custom scoring function compiled from
+a ScoreMe JSON spec via \code{\link[=load_instrument]{load_instrument()}}.
+}
+\details{
+Instruments marked \code{beta = TRUE} in \code{\link[=available_instruments]{available_instruments()}} are newer
+additions whose scoring has been ported from ScoreMe but has not yet been
+independently validated in tallieR. A warning is emitted for these
+instruments; suppress with \code{suppressWarnings()} if needed.
 }
 \examples{
 score_questionnaire("ess", list(ess1 = 2, ess2 = 1, ess3 = 0,
                                 ess4 = 3, ess5 = 1, ess6 = 0,
                                 ess7 = 2, ess8 = 1))
 
+\dontrun{
+# Score using a custom instrument loaded from a JSON spec
+my_instr <- load_instrument("path/to/fss.json")
+score_questionnaire("fss", answers, instruments = my_instr)
+}
+
+}
+\seealso{
+\code{\link[=load_instrument]{load_instrument()}}, \code{\link[=load_instrument_dir]{load_instrument_dir()}}
 }

@@ -4,7 +4,12 @@
 \alias{read_scoreme_dir}
 \title{Read a directory of ScoreMe JSON exports}
 \usage{
-read_scoreme_dir(dir, rescore = TRUE, pattern = "\\\\.json$")
+read_scoreme_dir(
+  dir,
+  rescore = TRUE,
+  pattern = "\\\\.json$",
+  instruments = NULL
+)
 }
 \arguments{
 \item{dir}{Path to a directory containing \code{.json} export files.}
@@ -13,6 +18,9 @@ read_scoreme_dir(dir, rescore = TRUE, pattern = "\\\\.json$")
 
 \item{pattern}{Regular expression used to filter filenames. Defaults to
 \code{"\\\\.json$"} (all JSON files).}
+
+\item{instruments}{An optional named list of custom instrument registry
+entries, passed through to \code{\link[=read_scoreme]{read_scoreme()}}. See \code{\link[=load_instrument]{load_instrument()}}.}
 }
 \value{
 A \code{tallier_study} object: a list with elements:

@@ -4,10 +4,15 @@
 \alias{score_all}
 \title{Score all questionnaires in an export}
 \usage{
-score_all(obj)
+score_all(obj, instruments = NULL)
 }
 \arguments{
 \item{obj}{A \code{tallier_export} or \code{tallier_study} object.}
+
+\item{instruments}{An optional named list of additional registry entries
+from \code{\link[=load_instrument]{load_instrument()}} or \code{\link[=load_instrument_dir]{load_instrument_dir()}}, merged with the
+built-in registry before scoring. Entries in \code{instruments} take
+precedence over built-ins with the same id.}
 }
 \value{
 The same object with scores updated in-place.

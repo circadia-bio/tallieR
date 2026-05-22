@@ -4,7 +4,7 @@
 \alias{read_scoreme}
 \title{Read a ScoreMe JSON export}
 \usage{
-read_scoreme(path, rescore = TRUE)
+read_scoreme(path, rescore = TRUE, instruments = NULL)
 }
 \arguments{
 \item{path}{Path to a \code{.json} file exported from ScoreMe.}
@@ -12,6 +12,12 @@ read_scoreme(path, rescore = TRUE)
 \item{rescore}{Logical. If \code{TRUE} (default), scores are recomputed from
 item-level answers using the built-in tallieR scoring functions. If
 \code{FALSE}, the scores stored in the export file are used as-is.}
+
+\item{instruments}{An optional named list of custom instrument registry
+entries created by \code{\link[=load_instrument]{load_instrument()}} or \code{\link[=load_instrument_dir]{load_instrument_dir()}}.
+When \code{rescore = TRUE}, these are merged with the built-in registry so
+that custom questionnaires in the export can be scored. Entries in
+\code{instruments} take precedence over built-ins with the same id.}
 }
 \value{
 A \code{tallier_export} object: a list with elements:
@@ -32,6 +38,14 @@ questionnaire results.
 exp <- read_scoreme("my_study_export.json")
 print(exp)
 wide <- scores_wide(exp)
+
+# With custom instruments
+custom <- load_instrument("fss.json")
+exp    <- read_scoreme("export.json", instruments = custom)
+wide   <- scores_wide(exp)
 }
 
+}
+\seealso{
+\code{\link[=load_instrument]{load_instrument()}}, \code{\link[=load_instrument_dir]{load_instrument_dir()}}
 }

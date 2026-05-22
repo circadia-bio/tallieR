@@ -44,8 +44,6 @@
 
 # ─── Internal helpers ─────────────────────────────────────────────────────────
 
-`%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
-
 .scalar <- function(x, default = NA_character_) {
   if (is.null(x) || length(x) == 0) return(default)
   as.character(x[[1]])
@@ -264,16 +262,194 @@ read_scoreme_dir <- function(dir, rescore = TRUE, pattern = "\\.json$", instrume
 
 #' @export
 print.tallier_export <- function(x, ...) {
-  cli::cli_alert_info(
-    "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at}"
-  )
+  instruments <- sort(unique(unlist(lapply(x$participants, function(p) {
+    vapply(p$results, `[[`, character(1), "questionnaire_id")
+  }))))
+  if (length(instruments) > 0L) {
+    cli::cli_alert_info(
+      "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at}"
+    )
+    cli::cli_bullets(c(" " = "Instruments ({length(instruments)}): {paste(instruments, collapse = ', ')}"))
+  } else {
+    cli::cli_alert_info(
+      "tallier_export: {x$n_participants} participant{?s} | exported {x$exported_at} | no results"
+    )
+  }
   invisible(x)
 }
 
 #' @export
 print.tallier_study <- function(x, ...) {
-  cli::cli_alert_info(
-    "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s}"
-  )
+  instruments <- sort(unique(unlist(lapply(x$participants, function(p) {
+    vapply(p$results, `[[`, character(1), "questionnaire_id")
+  }))))
+  if (length(instruments) > 0L) {
+    cli::cli_alert_info(
+      "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s}"
+    )
+    cli::cli_bullets(c(" " = "Instruments ({length(instruments)}): {paste(instruments, collapse = ', ')}"))
+  } else {
+    cli::cli_alert_info(
+      "tallier_study: {x$n_participants} participant{?s} from {length(x$files)} file{?s} | no results"
+    )
+  }
   invisible(x)
+}
+
+# ─── Summary helpers ──────────────────────────────────────────────────────────
+
+#' @keywords internal
+.summary_stats <- function(participants) {
+  n <- length(participants)
+
+  # Collect all result entries across participants
+  all_results <- unlist(lapply(participants, `[[`, "results"), recursive = FALSE)
+
+  if (length(all_results) == 0L) {
+    return(list(
+      n_participants    = n,
+      instruments       = character(0),
+      completion        = data.frame(questionnaire_id = character(0),
+                                     n = integer(0),
+                                     pct = numeric(0),
+                                     stringsAsFactors = FALSE),
+      date_range        = c(min = NA_character_, max = NA_character_)
+    ))
+  }
+
+  # Unique instruments and per-instrument participant counts
+  q_ids <- vapply(all_results, `[[`, character(1), "questionnaire_id")
+  p_ids <- unlist(lapply(seq_along(participants), function(i) {
+    rep(participants[[i]]$meta$participant_id %||% as.character(i),
+        length(participants[[i]]$results))
+  }))
+
+  instruments <- sort(unique(q_ids))
+
+  completion <- do.call(rbind, lapply(instruments, function(qid) {
+    n_with <- length(unique(p_ids[q_ids == qid]))
+    data.frame(
+      questionnaire_id = qid,
+      n   = n_with,
+      pct = round(n_with / max(n, 1L) * 100, 1),
+      stringsAsFactors = FALSE
+    )
+  }))
+
+  # Date range from completed_at timestamps
+  dates <- vapply(all_results, function(r) r$completed_at %||% NA_character_, character(1))
+  dates <- dates[!is.na(dates)]
+  date_range <- if (length(dates) > 0L) {
+    c(min = min(dates), max = max(dates))
+  } else {
+    c(min = NA_character_, max = NA_character_)
+  }
+
+  list(
+    n_participants = n,
+    instruments    = instruments,
+    completion     = completion,
+    date_range     = date_range
+  )
+}
+
+#' Summarise a tallier_export object
+#'
+#' Prints a structured overview of a `tallier_export`, including participant
+#' count, instruments present, per-instrument completion rates, and the date
+#' range of administrations. The summary statistics are also returned
+#' invisibly as a list for programmatic use.
+#'
+#' @param object A `tallier_export` object.
+#' @param ... Ignored.
+#'
+#' @return Invisibly, a list with elements `n_participants`, `instruments`,
+#'   `completion` (a data frame), and `date_range`.
+#'
+#' @examples
+#' \dontrun{
+#' exp <- read_scoreme("export.json")
+#' summary(exp)
+#'
+#' # Access stats programmatically
+#' s <- summary(exp)
+#' s$completion
+#' }
+#'
+#' @export
+summary.tallier_export <- function(object, ...) {
+  s <- .summary_stats(object$participants)
+
+  cli::cli_h1("tallier_export")
+  cli::cli_bullets(c(
+    "*" = "Participants: {s$n_participants}",
+    "*" = "Exported:     {object$exported_at %||% 'unknown'}",
+    "*" = "Instruments:  {length(s$instruments)}"
+  ))
+
+  if (length(s$instruments) > 0L) {
+    cli::cli_h2("Completion")
+    for (i in seq_len(nrow(s$completion))) {
+      r <- s$completion[i, ]
+      cli::cli_bullets(c(" " = "{r$questionnaire_id}: {r$n}/{s$n_participants} ({r$pct}%)"))
+    }
+    cli::cli_h2("Date range")
+    cli::cli_bullets(c(
+      " " = "First: {s$date_range['min']}",
+      " " = "Last:  {s$date_range['max']}"
+    ))
+  }
+
+  invisible(s)
+}
+
+#' Summarise a tallier_study object
+#'
+#' Prints a structured overview of a `tallier_study`, including participant
+#' count, number of source files, instruments present, per-instrument
+#' completion rates, and the date range of administrations. The summary
+#' statistics are also returned invisibly as a list for programmatic use.
+#'
+#' @param object A `tallier_study` object.
+#' @param ... Ignored.
+#'
+#' @return Invisibly, a list with elements `n_participants`, `n_files`,
+#'   `instruments`, `completion` (a data frame), and `date_range`.
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#' summary(study)
+#'
+#' # Access stats programmatically
+#' s <- summary(study)
+#' s$completion
+#' }
+#'
+#' @export
+summary.tallier_study <- function(object, ...) {
+  s <- .summary_stats(object$participants)
+  s$n_files <- length(object$files)
+
+  cli::cli_h1("tallier_study")
+  cli::cli_bullets(c(
+    "*" = "Participants: {s$n_participants}",
+    "*" = "Source files: {s$n_files}",
+    "*" = "Instruments:  {length(s$instruments)}"
+  ))
+
+  if (length(s$instruments) > 0L) {
+    cli::cli_h2("Completion")
+    for (i in seq_len(nrow(s$completion))) {
+      r <- s$completion[i, ]
+      cli::cli_bullets(c(" " = "{r$questionnaire_id}: {r$n}/{s$n_participants} ({r$pct}%)"))
+    }
+    cli::cli_h2("Date range")
+    cli::cli_bullets(c(
+      " " = "First: {s$date_range['min']}",
+      " " = "Last:  {s$date_range['max']}"
+    ))
+  }
+
+  invisible(s)
 }

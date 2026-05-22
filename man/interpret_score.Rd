@@ -4,12 +4,15 @@
 \alias{interpret_score}
 \title{Interpret a questionnaire score}
 \usage{
-interpret_score(id, score)
+interpret_score(id, score, instruments = NULL)
 }
 \arguments{
 \item{id}{Character. Questionnaire identifier.}
 
-\item{score}{Numeric score (or named list for PSQI).}
+\item{score}{Numeric score (or named list for composite instruments).}
+
+\item{instruments}{An optional named list of additional registry entries
+from \code{\link[=load_instrument]{load_instrument()}} or \code{\link[=load_instrument_dir]{load_instrument_dir()}}.}
 }
 \value{
 A list with elements \code{label}, \code{color} (hex), and \code{description}.

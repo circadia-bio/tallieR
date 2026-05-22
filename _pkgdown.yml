@@ -142,12 +142,21 @@ reference:
   - read_scoreme
   - read_scoreme_dir
 
+- title: "Custom instruments"
+  desc: "Load any ScoreMe-compatible JSON instrument spec for use in tallieR."
+  contents:
+  - load_instrument
+  - load_instrument_dir
+
 - title: "Tidy output"
   desc: "Reshape imported data into analysis-ready data frames."
   contents:
   - scores_wide
   - scores_long
   - items_long
+  - completion_summary
+  - as_tibble.tallier_export
+  - as_tibble.tallier_study
 
 - title: "Questionnaire scoring"
   desc: "Score and interpret validated instruments from raw item responses."
@@ -155,7 +164,20 @@ reference:
   - score_questionnaire
   - score_all
   - interpret_score
+  - interpret_all
   - available_instruments
+
+- title: "Reliability"
+  desc: "Internal consistency and reliability statistics."
+  contents:
+  - cronbach_alpha
+  - omega_reliability
+
+- title: "Study monitoring"
+  desc: "Summarise and inspect study objects."
+  contents:
+  - summary.tallier_export
+  - summary.tallier_study
 
 - title: "Package"
   desc: "Package-level documentation."
@@ -163,10 +185,13 @@ reference:
   - tallieR-package
 
 articles:
-- title: "Getting started"
+- title: "Guides"
   navbar: ~
   contents:
   - getting-started
+  - custom-instruments
+  - reliability-analysis
+  - longitudinal-data
 
 news:
   releases:

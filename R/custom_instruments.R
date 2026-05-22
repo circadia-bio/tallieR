@@ -107,7 +107,23 @@
     ))
   }
 
-  list(
+  # Parse reverse_items from the JSON spec's scoringMethod.reverseItems field,
+  # if present. The compiled entry uses the same shape as built-in instruments:
+  #   list(item_ids = character vector, max_val = integer)
+  # This ensures items_long(scored_items = TRUE) works correctly for custom
+  # instruments that define reverse-scored items.
+  reverse_items <- NULL
+  ri_spec <- spec[["scoringMethod"]][["reverseItems"]]
+  if (!is.null(ri_spec) && length(ri_spec) > 0) {
+    item_ids <- vapply(ri_spec, function(x) as.character(x[["id"]] %||% x), character(1))
+    max_val  <- as.integer(spec[["scoringMethod"]][["reverseMaxVal"]] %||%
+                           spec[["scoringMethod"]][["maxVal"]]        %||% NA_integer_)
+    if (length(item_ids) > 0 && !is.na(max_val)) {
+      reverse_items <- list(item_ids = item_ids, max_val = max_val)
+    }
+  }
+
+  entry <- list(
     title       = spec[["title"]]      %||% spec[["id"]],
     domain      = spec[["domain"]]     %||% "Custom",
     max_score   = as.numeric(spec[["maxScore"]] %||% NA_real_),
@@ -116,6 +132,10 @@
     interpret   = .compile_interpret_fn(spec),
     spec        = spec  # preserve original for documentation / display
   )
+
+  if (!is.null(reverse_items)) entry$reverse_items <- reverse_items
+
+  entry
 }
 
 # ─── Public API ───────────────────────────────────────────────────────────────
@@ -132,6 +152,13 @@
 #' algorithms) the returned entry will score as `NA` and a warning is emitted
 #' each time scoring is attempted. You can override the compiled `score`
 #' function by assigning a custom one after loading (see examples).
+#'
+#' **Reverse-scored items:** If the JSON spec's `scoringMethod` includes a
+#' `reverseItems` array (list of objects with an `id` field) and a
+#' `reverseMaxVal` (or `maxVal`) integer, the compiled entry will include a
+#' `reverse_items` list in the same format as built-in instruments. This
+#' allows [items_long()] with `scored_items = TRUE` to correctly apply
+#' reverse scoring for custom questionnaires.
 #'
 #' @param path Path to a `.json` file containing a ScoreMe instrument spec.
 #'   See `vignette("custom-instruments")` or

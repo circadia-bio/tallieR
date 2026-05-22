@@ -101,3 +101,67 @@ score_questionnaire("psqi", psqi_answers)
 ```{r instruments}
 available_instruments()
 ```
+
+The `has_reverse` column flags instruments with item-level reverse scoring (currently STAI-S and STAI-T). Pass `scored_items = TRUE` to `items_long()` to apply reversals automatically. The `returns_list` column flags composite instruments (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) whose `score_questionnaire()` result is a named list of subscale scores rather than a single number — in `scores_wide()` these appear as their primary summary scalar.
+
+## Study monitoring
+
+`summary()` prints a structured overview of participant count, instruments, completion rates, and date range:
+
+```{r summary}
+summary(exp)
+```
+
+Access the stats programmatically via the invisible return value:
+
+```{r summary-prog}
+s <- summary(exp)
+s$completion
+```
+
+`completion_summary()` returns a tidy data frame of completion status per participant and questionnaire:
+
+```{r completion}
+# Long format: one row per participant x questionnaire
+completion_summary(exp)
+
+# Wide format: one logical column per questionnaire
+completion_summary(exp, wide = TRUE)
+```
+
+## Clinical interpretations
+
+`interpret_all()` returns clinical interpretations for all results in one call, as a long data frame joinable with `scores_long()`:
+
+```{r interpret-all}
+interps <- interpret_all(exp)
+interps[, c("code", "questionnaire_id", "score", "label")]
+```
+
+## Reverse-scored items
+
+For instruments with reverse-scored items (currently STAI-S and STAI-T), pass `scored_items = TRUE` to get a `response_scored` column alongside the raw `response`:
+
+```r
+items_long(exp, scored_items = TRUE)
+```
+
+## Reliability analysis
+
+`cronbach_alpha()` computes Cronbach's α with exact CIs. `omega_reliability()` computes McDonald's ω via single-factor EFA — generally preferred for non-tau-equivalent items:
+
+```r
+cronbach_alpha(exp)
+omega_reliability(exp)
+```
+
+Both accept a `tallier_export`/`tallier_study` object or an `items_long()` data frame directly.
+
+## Tidyverse integration
+
+Any study object coerces directly to a tibble via `scores_wide()`:
+
+```r
+library(tibble)
+tibble::as_tibble(exp)
+```

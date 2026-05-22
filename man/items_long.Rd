@@ -4,17 +4,30 @@
 \alias{items_long}
 \title{Item-level long table}
 \usage{
-items_long(obj, include_meta = TRUE)
+items_long(obj, include_meta = TRUE, scored_items = FALSE, instruments = NULL)
 }
 \arguments{
 \item{obj}{A \code{tallier_export} or \code{tallier_study} object.}
 
 \item{include_meta}{Logical. If \code{TRUE} (default), participant metadata
 columns are included.}
+
+\item{scored_items}{Logical. If \code{TRUE}, adds a \code{response_scored} column
+with reverse-scored values applied for instruments that define
+\code{reverse_items} (currently STAI-S and STAI-T). For all other items and
+instruments, \code{response_scored} equals \code{response}. Non-numeric responses
+(e.g. clock-time lists, yes/no) are left as-is. Defaults to \code{FALSE} to
+preserve existing behaviour.}
+
+\item{instruments}{An optional named list of additional registry entries
+from \code{\link[=load_instrument]{load_instrument()}} or \code{\link[=load_instrument_dir]{load_instrument_dir()}}, used when
+\code{scored_items = TRUE} to resolve reverse-scoring metadata for custom
+instruments.}
 }
 \value{
 A \code{data.frame} with columns: participant metadata (optional),
-\code{questionnaire_id}, \code{completed_at}, \code{item_id}, \code{response}.
+\code{questionnaire_id}, \code{completed_at}, \code{item_id}, \code{response}, and
+optionally \code{response_scored}.
 }
 \description{
 Returns a data frame with one row per participant × questionnaire

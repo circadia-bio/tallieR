@@ -12,14 +12,15 @@
 # score_all(), interpret_score().
 
 # --- Merged registry ----------------------------------------------------------
+#
+# .INSTRUMENTS is assembled in R/zzz.R, which is sourced last, after all
+# domain files (questionnaires_*.R) have been loaded. Referencing the
+# domain lists here at top level would fail if this file sorts before them
+# alphabetically (e.g. because custom_instruments.R forces a re-sort).
+# Functions below reference .INSTRUMENTS only inside their bodies, which
+# are not evaluated until called -- so load order doesn't matter there.
 
-.INSTRUMENTS <- c(
-  .SLEEP_INSTRUMENTS,
-  .MENTAL_HEALTH_INSTRUMENTS,
-  .WELLBEING_INSTRUMENTS,
-  .PHYSICAL_ACTIVITY_INSTRUMENTS,
-  .NEURODEVELOPMENTAL_INSTRUMENTS
-)
+.INSTRUMENTS <- list()   # populated by .onLoad() in zzz.R
 
 # --- Public API ---------------------------------------------------------------
 
@@ -34,7 +35,11 @@
 #' the ScoreMe app exactly; use with appropriate caution in clinical contexts.
 #'
 #' @return A `data.frame` with columns `id`, `title`, `domain`, `max_score`,
-#'   `beta`.
+#'   `beta`, `has_reverse`, and `returns_list`. The `max_score` column refers
+#'   to the primary scalar score; instruments where `returns_list = TRUE`
+#'   (PSQI, MCTQ, DASS-21, PANSS, WHOQOL-BREF) return a named list of
+#'   subscale scores rather than a single number, and `max_score` reflects
+#'   the global or total component only.
 #'
 #' @examples
 #' available_instruments()
@@ -47,12 +52,15 @@
 #'
 #' @export
 available_instruments <- function() {
+  composite_ids <- c("psqi", "mctq", "dass21", "panss", "whoqol_bref")
   data.frame(
-    id        = names(.INSTRUMENTS),
-    title     = vapply(.INSTRUMENTS, `[[`, character(1), "title"),
-    domain    = vapply(.INSTRUMENTS, `[[`, character(1), "domain"),
-    max_score = vapply(.INSTRUMENTS, `[[`, numeric(1),   "max_score"),
-    beta      = vapply(.INSTRUMENTS, `[[`, logical(1),   "beta"),
+    id          = names(.INSTRUMENTS),
+    title       = vapply(.INSTRUMENTS, `[[`, character(1), "title"),
+    domain      = vapply(.INSTRUMENTS, `[[`, character(1), "domain"),
+    max_score   = vapply(.INSTRUMENTS, `[[`, numeric(1),   "max_score"),
+    beta        = vapply(.INSTRUMENTS, `[[`, logical(1),   "beta"),
+    has_reverse = vapply(.INSTRUMENTS, function(x) !is.null(x[["reverse_items"]]), logical(1)),
+    returns_list = names(.INSTRUMENTS) %in% composite_ids,
     stringsAsFactors = FALSE,
     row.names = NULL
   )
@@ -136,6 +144,11 @@ score_questionnaire <- function(id, answers, instruments = NULL) {
 #'
 #' @export
 score_all <- function(obj, instruments = NULL) {
+  beta_seen <- character(0)
+
+  # Build the merged registry once, outside the participant/result loops.
+  registry <- if (!is.null(instruments)) c(instruments, .INSTRUMENTS) else .INSTRUMENTS
+
   obj$participants <- lapply(obj$participants, function(p) {
     p$results <- lapply(p$results, function(r) {
       rescored <- tryCatch(
@@ -143,10 +156,29 @@ score_all <- function(obj, instruments = NULL) {
         error = function(e) NULL
       )
       if (!is.null(rescored)) r$score <- rescored
+
+      # Track beta instruments encountered (without warning yet)
+      inst <- registry[[tolower(r$questionnaire_id)]]
+      if (isTRUE(inst$beta)) {
+        beta_seen <<- union(beta_seen, r$questionnaire_id)
+      }
+
       r
     })
     p
   })
+
+  # One study-level warning covering all beta instruments found, rather than
+  # one warning per participant × instrument.
+  if (length(beta_seen) > 0L) {
+    ids <- paste(paste0("'", beta_seen, "'"), collapse = ", ")
+    rlang::warn(paste0(
+      "Beta instrument(s) scored: ", ids, ". ",
+      "Scoring matches the ScoreMe app but has not yet been independently ",
+      "validated in tallieR. Suppress with suppressWarnings() if intentional."
+    ))
+  }
+
   obj
 }
 
@@ -174,4 +206,90 @@ interpret_score <- function(id, score, instruments = NULL) {
     rlang::abort(paste0("Unknown questionnaire id: '", id, "'."))
   }
   inst$interpret(score)
+}
+
+#' Interpret all questionnaire scores in an export
+#'
+#' Returns a long data frame with one row per participant x questionnaire x
+#' administration, augmented with clinical interpretation columns (`label`,
+#' `color`, `description`). Mirrors the shape of [scores_long()] so the two
+#' can be joined by `participant_id` + `questionnaire_id` + `completed_at`.
+#'
+#' Scores that cannot be interpreted (unknown instrument, `NA` score, or
+#' composite score with no matching band) return `NA` in all three
+#' interpretation columns rather than an error, so the rest of the study
+#' data is unaffected.
+#'
+#' @param obj A `tallier_export` or `tallier_study` object.
+#' @param include_meta Logical. If `TRUE` (default), participant metadata
+#'   columns are prepended (same columns as [scores_long()]).
+#' @param instruments An optional named list of additional registry entries
+#'   from [load_instrument()] or [load_instrument_dir()].
+#'
+#' @return A `data.frame` with columns: participant metadata (optional),
+#'   `questionnaire_id`, `completed_at`, `score`, `label`, `color`,
+#'   `description`.
+#'
+#' @examples
+#' \dontrun{
+#' study <- read_scoreme_dir("exports/")
+#' interps <- interpret_all(study)
+#'
+#' # Join with scores_long() if you need both
+#' scores <- scores_long(study)
+#' full   <- merge(scores, interps[
+#'   c("participant_id", "questionnaire_id", "completed_at",
+#'     "label", "color", "description")
+#' ], by = c("participant_id", "questionnaire_id", "completed_at"),
+#'   all.x = TRUE)
+#' }
+#'
+#' @seealso [interpret_score()], [scores_long()]
+#'
+#' @export
+interpret_all <- function(obj, include_meta = TRUE, instruments = NULL) {
+  participants <- obj[["participants"]]
+
+  rows <- purrr::map_dfr(participants, function(p) {
+    meta <- p$meta
+
+    if (length(p$results) == 0L) return(NULL)
+
+    purrr::map_dfr(p$results, function(r) {
+      interp <- tryCatch(
+        suppressWarnings(interpret_score(r$questionnaire_id, r$score, instruments = instruments)),
+        error = function(e) list(label = NA_character_, color = NA_character_, description = NA_character_)
+      )
+
+      score_val <- r$score
+      if (is.list(score_val)) {
+        score_val <- jsonlite::toJSON(score_val, auto_unbox = TRUE)
+      }
+
+      data.frame(
+        participant_id   = meta$participant_id %||% NA_character_,
+        code             = meta$code           %||% NA_character_,
+        questionnaire_id = r$questionnaire_id,
+        completed_at     = r$completed_at,
+        score            = as.character(score_val),
+        label            = interp$label       %||% NA_character_,
+        color            = interp$color       %||% NA_character_,
+        description      = interp$description %||% NA_character_,
+        stringsAsFactors = FALSE
+      )
+    })
+  })
+
+  if (is.null(rows) || nrow(rows) == 0L) return(data.frame())
+
+  if (include_meta) {
+    meta_df <- purrr::map_dfr(participants, function(p) {
+      as.data.frame(p$meta, stringsAsFactors = FALSE)
+    })
+    rows <- merge(meta_df, rows,
+                  by = c("participant_id", "code"),
+                  all.y = TRUE)
+  }
+
+  rows
 }

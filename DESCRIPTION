@@ -39,7 +39,8 @@ Suggests:
     knitr,
     pkgdown,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tibble (>= 3.0.0)
 Config/testthat/edition: 3
 URL: https://tallier.circadia-lab.uk, https://github.com/circadia-bio/tallieR
 BugReports: https://github.com/circadia-bio/tallieR/issues
