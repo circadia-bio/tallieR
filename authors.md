@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/circadia-bio/tallieR/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/circadia-bio/tallieR/blob/v0.2.0/DESCRIPTION)
 
 França L, Leocadio-Miguel M (2026). *tallieR: Import and Score ScoreMe
 App Questionnaire Data*. R package version 0.2.0,
