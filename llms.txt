@@ -488,7 +488,7 @@ full    <- merge(
 - 🌙 [**SleepDiaries**](https://github.com/circadia-bio/SleepDiaries) —
   the companion Sleep Diaries app for actigraphy and diary data
   collection
-- 🧪 [**slumbR**](https://github.com/circadia-bio/slumbR) — R companion
+- 🛌 [**slumbR**](https://github.com/circadia-bio/slumbR) — R companion
   for Sleep Diaries exports
 - 🔬 [**circadia-bio**](https://github.com/circadia-bio) — the Circadia
   Lab GitHub organisation
