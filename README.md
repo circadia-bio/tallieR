@@ -367,7 +367,7 @@ full    <- merge(
 
 - 📱 [**ScoreMe**](https://github.com/circadia-bio/ScoreMe) — the cross-platform app that administers questionnaires and generates the exports tallieR reads
 - 🌙 [**SleepDiaries**](https://github.com/circadia-bio/SleepDiaries) — the companion Sleep Diaries app for actigraphy and diary data collection
-- 🧪 [**slumbR**](https://github.com/circadia-bio/slumbR) — R companion for Sleep Diaries exports
+- 🛌 [**slumbR**](https://github.com/circadia-bio/slumbR) — R companion for Sleep Diaries exports
 - 🔬 [**circadia-bio**](https://github.com/circadia-bio) — the Circadia Lab GitHub organisation
 
 ---
